@@ -208,31 +208,21 @@ shoot() {
     this.add.circle(x, y, 4, 0xffff00);
 
     // 🎯 hit detection
+let hit = false;
+
 this.targets.children.iterate((target) => {
 
-    if (!target || !target.active) return;
-
-    this.sound.play(
-    Phaser.Math.RND.pick(['death1','death2','death3'])
-    );
+    if (!target || !target.active || hit) return;
 
     let b = target.getBounds();
 
-    // 📦 clon seguro del rectángulo
-    let bounds = new Phaser.Geom.Rectangle(
-        b.x,
-        b.y,
-        b.width,
-        b.height
-    );
+    let bounds = new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height);
 
-    // 🎯 ajuste fino
     bounds.width *= 0.6;
     bounds.height *= 0.8;
     bounds.x += bounds.width * 0.2;
     bounds.y += bounds.height * 0.1;
 
-    // 🧠 zona headshot
     const head = new Phaser.Geom.Rectangle(
         bounds.x,
         bounds.y,
@@ -240,19 +230,15 @@ this.targets.children.iterate((target) => {
         bounds.height * 0.3
     );
 
-    // 🧠 HEADSHOT
     if (Phaser.Geom.Rectangle.Contains(head, x, y)) {
         this.hitTarget(target, true);
-        return false; // 🔥 corta el loop
+        hit = true;
     }
-
-    // 💥 CUERPO
-    if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
+    else if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
         this.hitTarget(target, false);
-        return false; // 🔥 corta el loop
+        hit = true;
     }
 });
-
     // 🔊 aviso cuando se queda sin balas
     if (this.ammo === 0) {
         this.emptyVoice.play();
@@ -302,6 +288,10 @@ this.targets.children.iterate((target) => {
 hitTarget(target, isHeadshot = false) {
 
     if (!target.active) return;
+
+        this.sound.play(
+    Phaser.Math.RND.pick(['death1','death2','death3'])
+    );
 
     target.destroy();
 
