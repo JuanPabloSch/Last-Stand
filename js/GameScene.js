@@ -36,7 +36,7 @@ class GameScene extends Phaser.Scene {
         this.gruntSound = this.sound.add('grunt');
         this.heartbeatSound = this.sound.add('heartbeat', {
         loop: true,
-        volume: 0.5
+        volume: 0.8
         });
         this.deathScream = this.sound.add('deathScream');
 
@@ -204,16 +204,46 @@ shoot() {
     this.add.circle(x, y, 4, 0xffff00);
 
     // 🎯 hit detection
-    this.targets.children.iterate((target) => {
+this.targets.children.iterate((target) => {
 
-        if (!target) return;
+    if (!target) return;
 
-        const dist = Phaser.Math.Distance.Between(x, y, target.x, target.y);
+    let b = target.getBounds();
 
-        if (dist < 40) {
-            this.hitTarget(target);
-        }
-    });
+// CLON seguro
+let bounds = new Phaser.Geom.Rectangle(
+    b.x,
+    b.y,
+    b.width,
+    b.height
+);
+
+    // ajuste fino
+    bounds.width *= 0.6;
+    bounds.height *= 0.8;
+    bounds.x += bounds.width * 0.2;
+    bounds.y += bounds.height * 0.1;
+
+    // 🧠 HEADSHOT (parte superior)
+    const head = new Phaser.Geom.Rectangle(
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height * 0.3
+    );
+
+    // 🎯 chequeo headshot
+    if (Phaser.Geom.Rectangle.Contains(head, x, y)) {
+    this.hitTarget(target, true);
+    } else if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
+    this.hitTarget(target, false);
+    }
+
+    // 💥 cuerpo
+    if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
+        this.hitTarget(target, false);
+    }
+});
 
     // 🔊 aviso cuando se queda sin balas
     if (this.ammo === 0) {
@@ -231,7 +261,8 @@ shoot() {
 
     const target = this.add.image(x, y, type);
 
-    target.setScale(0.3);
+    target.displayWidth = 60;
+    target.scaleY = target.scaleX;
     target.setTint(0xff8800); // 🟠 inicio
 
     target.state = 0;
@@ -259,7 +290,7 @@ shoot() {
 }
 
     // 💥 hit
-    hitTarget(target) {
+hitTarget(target, isHeadshot = false) {
 
     if (!target.active) return;
 
@@ -267,14 +298,14 @@ shoot() {
 
     let points = 10;
 
-    // 🟠 bonus si lo matás temprano
     if (target.state === 0) points = 20;
-
-    // 🟡 normal
     if (target.state === 1) points = 10;
-
-    // 🔴 tarde
     if (target.state === 2) points = 5;
+
+    // 🧠 bonus headshot
+    if (isHeadshot) {
+        points += 5;
+    }
 
     this.score += points;
 
