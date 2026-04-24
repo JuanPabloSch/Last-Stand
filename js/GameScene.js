@@ -47,7 +47,41 @@ class GameScene extends Phaser.Scene {
         this.gameoverSound = this.sound.add('gameoverSound');
         this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
         this.lowHpActive = false;
+        
+        // 🔦 luces del techo
+        this.light1 = this.add.circle(380, 82, 6, 0xffffaa, 0.6);
+        this.light2 = this.add.circle(650, 82, 6, 0xffffaa, 0.6);
+        this.time.addEvent({
+            delay: 200,
+            loop: true,
+            callback: () => {
+                this.light1.alpha = Phaser.Math.FloatBetween(0.4, 0.8);
+                this.light2.alpha = Phaser.Math.FloatBetween(0.3, 0.9);
+            }
+        });
 
+        const g = this.add.graphics();
+        g.fillStyle(0xffffff);
+        g.fillCircle(0, 0, 2);
+        g.generateTexture('dust', 4, 4);
+        g.destroy();
+        this.dust = this.add.particles(0, 0, 'dust', {
+        x: { min: 0, max: 800 },
+        y: { min: 0, max: 600 },
+
+        lifespan: 7000,
+
+        speedX: { min: -8, max: 8 },
+        speedY: { min: 5, max: 25 },
+
+        scale: { start: 1.8, end: 0 },
+        alpha: { start: 0.25, end: 0 },
+
+        quantity: 1,
+        frequency: 50,
+
+        tint: 0xaaaaaa
+    });
         // ocultar cursor del sistema
         this.input.setDefaultCursor('none');
         this.game.canvas.style.cursor = 'none';
@@ -59,7 +93,7 @@ class GameScene extends Phaser.Scene {
             backgroundColor: '#000000aa',
             padding: { x: 10, y: 5 }
         });
-
+        
         this.maxLife = 5;
         this.life = this.maxLife;
 
@@ -205,7 +239,15 @@ shoot() {
     const y = this.input.y;
 
     // efecto visual
-    this.add.circle(x, y, 4, 0xffff00);
+    const impact = this.add.circle(x, y, 3, 0xffff00);
+
+this.tweens.add({
+    targets: impact,
+    alpha: 0,
+    scale: 0.3,
+    duration: 150,
+    onComplete: () => impact.destroy()
+});
 
     // 🎯 hit detection
 let hit = false;
@@ -253,17 +295,17 @@ spawnTarget() {
         // 🟤 PISO ABAJO
         { x: 53, y: 490 },
         { x: 188, y: 475 },
-        { x: 353, y: 500 },
+        { x: 353, y: 485 },
         { x: 404, y: 463 },
-        { x: 507, y: 500 },
+        { x: 507, y: 490 },
         { x: 686, y: 449 },
-        { x: 656, y: 547 },
+        { x: 656, y: 501 },
         { x: 55, y: 446 },
         { x: 390, y: 448 },
         { x: 749, y: 475 },
 
         // 🪜 ESCALERA
-        { x: 727, y: 228 },
+        { x: 727, y: 215 },
         { x: 558, y: 200 },
 
         // 🟡 PISO ARRIBA (ligero random en X)
