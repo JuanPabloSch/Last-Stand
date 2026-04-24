@@ -17,10 +17,14 @@ class GameScene extends Phaser.Scene {
         this.load.image('enemy1', 'assets/enemies/human1.png');
         this.load.image('enemy2', 'assets/enemies/human2.png');
         this.load.image('enemy3', 'assets/enemies/human3.png');
+        this.load.audio('death1', 'assets/sfx/death1.mp3');
+        this.load.audio('death2', 'assets/sfx/death2.mp3');
+        this.load.audio('death3', 'assets/sfx/death3.mp3');
     }
 
     create() {
 
+        
         this.maxAmmo = 6;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
@@ -29,6 +33,7 @@ class GameScene extends Phaser.Scene {
         this.emptyVoice = this.sound.add('emptyVoice');
         this.emptyVoiceCooldown = false;
         this.prevAmmo = this.ammo;
+        this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
         this.crosshair = this.add.image(400, 300, 'crosshair');
         this.crosshair.setScale(0.08); // ajustá tamaño
         this.crosshair.setDepth(10);
@@ -39,7 +44,6 @@ class GameScene extends Phaser.Scene {
         volume: 0.8
         });
         this.deathScream = this.sound.add('deathScream');
-
         this.gameoverSound = this.sound.add('gameoverSound');
         this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
         this.lowHpActive = false;
@@ -47,8 +51,6 @@ class GameScene extends Phaser.Scene {
         // ocultar cursor del sistema
         this.input.setDefaultCursor('none');
         this.game.canvas.style.cursor = 'none';
-
-        this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
 
         // 🔫 UI SIEMPRE VISIBLE
         this.ammoText = this.add.text(20, 20, '', {
@@ -121,6 +123,8 @@ class GameScene extends Phaser.Scene {
     // 🎯 crosshair sigue mouse
     this.crosshair.x = this.input.x;
     this.crosshair.y = this.input.y;
+
+    
     }
 
 damagePlayer() {
@@ -206,25 +210,29 @@ shoot() {
     // 🎯 hit detection
 this.targets.children.iterate((target) => {
 
-    if (!target) return;
+    if (!target || !target.active) return;
+
+    this.sound.play(
+    Phaser.Math.RND.pick(['death1','death2','death3'])
+    );
 
     let b = target.getBounds();
 
-// CLON seguro
-let bounds = new Phaser.Geom.Rectangle(
-    b.x,
-    b.y,
-    b.width,
-    b.height
-);
+    // 📦 clon seguro del rectángulo
+    let bounds = new Phaser.Geom.Rectangle(
+        b.x,
+        b.y,
+        b.width,
+        b.height
+    );
 
-    // ajuste fino
+    // 🎯 ajuste fino
     bounds.width *= 0.6;
     bounds.height *= 0.8;
     bounds.x += bounds.width * 0.2;
     bounds.y += bounds.height * 0.1;
 
-    // 🧠 HEADSHOT (parte superior)
+    // 🧠 zona headshot
     const head = new Phaser.Geom.Rectangle(
         bounds.x,
         bounds.y,
@@ -232,16 +240,16 @@ let bounds = new Phaser.Geom.Rectangle(
         bounds.height * 0.3
     );
 
-    // 🎯 chequeo headshot
+    // 🧠 HEADSHOT
     if (Phaser.Geom.Rectangle.Contains(head, x, y)) {
-    this.hitTarget(target, true);
-    } else if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
-    this.hitTarget(target, false);
+        this.hitTarget(target, true);
+        return false; // 🔥 corta el loop
     }
 
-    // 💥 cuerpo
+    // 💥 CUERPO
     if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
         this.hitTarget(target, false);
+        return false; // 🔥 corta el loop
     }
 });
 
@@ -254,6 +262,7 @@ let bounds = new Phaser.Geom.Rectangle(
     // 🎯 spawn target
     spawnTarget() {
 
+    console.log("SPAWN");
     const x = Phaser.Math.Between(100, 700);
     const y = Phaser.Math.Between(100, 500);
 
