@@ -97,7 +97,7 @@ class GameScene extends Phaser.Scene {
         this.maxLife = 5;
         this.life = this.maxLife;
 
-        this.lifeText = this.add.text(650, 20, '', {
+        this.lifeText = this.add.text(600, 20, '', {
             fontSize: '22px',
             fill: '#ff4444',
             backgroundColor: '#000000aa',
