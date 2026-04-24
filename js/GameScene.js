@@ -246,36 +246,65 @@ this.targets.children.iterate((target) => {
 }
 
     // 🎯 spawn target
-    spawnTarget() {
+spawnTarget() {
 
-    console.log("SPAWN");
-    const x = Phaser.Math.Between(100, 700);
-    const y = Phaser.Math.Between(100, 500);
+    const positions = [
 
+        // 🟤 PISO ABAJO
+        { x: 53, y: 490 },
+        { x: 188, y: 475 },
+        { x: 353, y: 500 },
+        { x: 404, y: 463 },
+        { x: 507, y: 500 },
+        { x: 686, y: 449 },
+        { x: 656, y: 547 },
+        { x: 55, y: 446 },
+        { x: 390, y: 448 },
+        { x: 749, y: 475 },
+
+        // 🪜 ESCALERA
+        { x: 727, y: 228 },
+        { x: 558, y: 200 },
+
+        // 🟡 PISO ARRIBA (ligero random en X)
+        { x: Phaser.Math.Between(80, 700), y: 205 },
+        { x: Phaser.Math.Between(80, 700), y: 200 }
+    ];
+
+    const pos = Phaser.Math.RND.pick(positions);
     const type = Phaser.Math.RND.pick(this.enemyTypes);
 
-    const target = this.add.image(x, y, type);
+    const target = this.add.image(pos.x, pos.y, type);
 
-    target.displayWidth = 60;
+    // 🔥 tamaño base SIEMPRE
+    target.displayWidth = 80;
     target.scaleY = target.scaleX;
-    target.setTint(0xff8800); // 🟠 inicio
 
+    // 🧠 ajuste por altura
+    if (pos.y < 300) {
+        target.setScale(target.scaleX * 0.8); // 👈 más chico arriba
+    }
+
+    target.setTint(0xff8800);
     target.state = 0;
 
     this.targets.add(target);
+    if (pos.x >= 400) {
+    target.setFlipX(true);  // derecha → se da vuelta
+    } else {
+    target.setFlipX(false); // izquierda → normal
+    }
 
     // 🟡 warning
     this.time.delayedCall(1200, () => {
         if (!target.active) return;
-
         target.setTint(0xffcc00);
         target.state = 1;
     });
 
-    // 🔴 danger + daño
+    // 🔴 danger
     this.time.delayedCall(2400, () => {
         if (!target.active) return;
-
         target.setTint(0xff0000);
         target.state = 2;
 
