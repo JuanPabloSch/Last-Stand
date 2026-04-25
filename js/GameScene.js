@@ -20,6 +20,7 @@ class GameScene extends Phaser.Scene {
         this.load.audio('death1', 'assets/sfx/death1.mp3');
         this.load.audio('death2', 'assets/sfx/death2.mp3');
         this.load.audio('death3', 'assets/sfx/death3.mp3');
+        this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
     }
 
     create() {
@@ -29,7 +30,7 @@ class GameScene extends Phaser.Scene {
         this.enemiesAlive = 0;
         this.enemiesToSpawn = 0;
         this.spawning = false;
-        
+        this.getReadySound = this.sound.add('getReadySound');
         this.maxAmmo = 6;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
@@ -446,7 +447,7 @@ endWave() {
         fontSize: '32px',
         fill: '#ffff00'
     });
-
+    this.getReadySound.play();
     this.time.delayedCall(1200, () => text.destroy());
 
     this.time.delayedCall(1500, () => {
