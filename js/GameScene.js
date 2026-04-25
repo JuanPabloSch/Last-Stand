@@ -21,6 +21,7 @@ class GameScene extends Phaser.Scene {
         this.load.audio('death2', 'assets/sfx/death2.mp3');
         this.load.audio('death3', 'assets/sfx/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
+        this.load.audio('gameMusic', 'assets/music/game.mp3');
     }
 
     create() {
@@ -54,6 +55,12 @@ class GameScene extends Phaser.Scene {
         this.gameoverSound = this.sound.add('gameoverSound');
         this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
         this.lowHpActive = false;
+        this.gameMusic = this.sound.add('gameMusic', {
+            loop: true,
+            volume: 0.5
+        });
+
+        this.gameMusic.play();
         
         // 🔦 luces del techo
         this.light1 = this.add.circle(380, 82, 6, 0xffffaa, 0.6);
@@ -231,6 +238,10 @@ damagePlayer() {
 
 gameOver() {
 
+    if (this.gameMusic?.isPlaying) {
+    this.gameMusic.stop();
+    }
+
     if (this.isGameOver) return;
     this.isGameOver = true;
 
@@ -238,17 +249,17 @@ gameOver() {
     this.isLeftDown = false;
     this.isRightDown = false;
 
-    // 🛑 frenar TODO lo que siga corriendo
+    // 🛑 frenar spawn
     if (this.spawnLoop) {
         this.spawnLoop.remove();
     }
 
-    this.time.removeAllEvents(); // 🔥 CLAVE (mata delayedCall de enemigos)
+    this.time.removeAllEvents();
 
-    // 🧹 borrar enemigos en pantalla
+    // 🧹 borrar enemigos
     this.targets.clear(true, true);
 
-    // 📴 parar latido
+    // 📴 sonido
     if (this.heartbeatSound?.isPlaying) {
         this.heartbeatSound.stop();
     }
@@ -256,20 +267,33 @@ gameOver() {
     // 😱 grito
     this.deathScream.play();
 
-    // 📳 efectos
+    // 🎥 efectos
     this.cameras.main.shake(400, 0.02);
     this.cameras.main.flash(150, 255, 0, 0);
 
-    // ⏱ pantalla de game over
+    // 🖤 overlay oscuro (ACÁ VA)
+    let fade = this.add.rectangle(400, 300, 800, 600, 0x000000)
+        .setDepth(100)
+        .setAlpha(0);
+
+    this.tweens.add({
+        targets: fade,
+        alpha: 0.7,
+        duration: 500
+    });
+
+    // ⏱ mostrar UI después
     this.time.delayedCall(600, () => {
 
         this.gameoverSound.play();
 
+        // 🟥 GAME OVER
         this.add.text(250, 250, "GAME OVER", {
             fontSize: '48px',
             fill: '#ff0000'
-        });
+        }).setDepth(200);
 
+        // 🔁 TRY AGAIN
         let retry = this.add.text(400, 320, "TRY AGAIN", {
             fontSize: '32px',
             fill: '#ffffff',
@@ -277,12 +301,14 @@ gameOver() {
             padding: { x: 20, y: 10 }
         })
         .setOrigin(0.5)
-        .setDepth(20)
+        .setDepth(200)
         .setInteractive({ useHandCursor: true });
 
         retry.on('pointerdown', () => {
             this.scene.restart();
         });
+
+        // ⬅ VOLVER AL MENU
         let menu = this.add.text(400, 380, "VOLVER AL MENU", {
             fontSize: '28px',
             fill: '#ffffff',
@@ -290,12 +316,13 @@ gameOver() {
             padding: { x: 20, y: 10 }
         })
         .setOrigin(0.5)
-        .setDepth(20)
+        .setDepth(200)
         .setInteractive({ useHandCursor: true });
 
         menu.on('pointerdown', () => {
-            this.scene.start('MenuScene'); // 👈 tu escena de menú
+            this.scene.start('MenuScene');
         });
+
     });
 }
 // 🔫
@@ -508,21 +535,41 @@ endWave() {
 
 winGame() {
 
-    this.scene.pause();
+    this.isGameOver = true;
 
+    // 🖤 fondo
+    let fade = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7)
+        .setDepth(100);
+
+    // 🟢 textos
     this.add.text(120, 200, "SOBREVIVISTE TODAS LAS OLEADAS", {
         fontSize: '32px',
         fill: '#00ff00'
-    });
+    }).setDepth(200);
 
     this.add.text(300, 280, `Score: ${this.score}`, {
         fontSize: '28px',
         fill: '#ffffff'
-    });
+    }).setDepth(200);
 
     this.add.text(300, 330, `Vida: ${this.life}`, {
         fontSize: '28px',
         fill: '#ffffff'
+    }).setDepth(200);
+
+    // ⬅ botón
+    let menu = this.add.text(400, 420, "VOLVER AL MENU", {
+        fontSize: '30px',
+        fill: '#ffffff',
+        backgroundColor: '#000000aa',
+        padding: { x: 20, y: 10 }
+    })
+    .setOrigin(0.5)
+    .setDepth(200)
+    .setInteractive({ useHandCursor: true });
+
+    menu.on('pointerdown', () => {
+        this.scene.start('MenuScene');
     });
 }
 
