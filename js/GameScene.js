@@ -23,7 +23,12 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.wave = 1;
+        this.maxWaves = 10;
 
+        this.enemiesAlive = 0;
+        this.enemiesToSpawn = 0;
+        this.spawning = false;
         
         this.maxAmmo = 6;
         this.ammo = this.maxAmmo;
@@ -112,6 +117,9 @@ class GameScene extends Phaser.Scene {
             backgroundColor: '#000000aa',
             padding: { x: 10, y: 5 }
         });
+        this.startWave();
+
+        
 
     this.updateScoreUI();
     this.updateLifeUI();
@@ -134,13 +142,44 @@ class GameScene extends Phaser.Scene {
 
         this.targets = this.add.group();
 
-        // 👇 MENOS ENEMIGOS (más tranquilo)
-        this.time.addEvent({
-            delay: 1200, // antes 600–700
-            loop: true,
-            callback: () => this.spawnTarget()
-        });
+        }
+
+    startWave() {
+
+    if (this.wave > this.maxWaves) {
+        this.winGame();
+        return;
     }
+
+    this.spawning = true;
+
+    // cartel
+    let text = this.add.text(300, 200, `WAVE ${this.wave}`, {
+        fontSize: '40px',
+        fill: '#ffffff'
+    });
+
+    this.time.delayedCall(1000, () => text.destroy());
+
+    // cantidad enemigos (simple y estable)
+    this.enemiesToSpawn = 2 + this.wave * 2;
+    this.enemiesAlive = 0;
+
+    // loop de spawn CONTROLADO
+    this.spawnLoop = this.time.addEvent({
+        delay: 1000,
+        loop: true,
+        callback: () => {
+
+            if (this.enemiesToSpawn <= 0) {
+                this.spawnLoop.remove();
+                return;
+            }
+
+            this.spawnTarget();
+        }
+    });
+}
 
     update() {
 
@@ -352,7 +391,12 @@ spawnTarget() {
 
         this.damagePlayer();
         target.destroy();
+        
+        this.enemiesAlive--;
+        this.checkWaveEnd();
     });
+    this.enemiesAlive++;
+    this.enemiesToSpawn--;
 }
 
     // 💥 hit
@@ -365,6 +409,9 @@ hitTarget(target, isHeadshot = false) {
     );
 
     target.destroy();
+
+    this.enemiesAlive--;
+    this.checkWaveEnd();
 
     let points = 10;
 
@@ -380,6 +427,57 @@ hitTarget(target, isHeadshot = false) {
     this.score += points;
 
     this.updateScoreUI();
+}
+
+checkWaveEnd() {
+
+    if (this.enemiesAlive <= 0 && this.enemiesToSpawn <= 0 && this.spawning) {
+
+        this.spawning = false;
+
+        this.time.delayedCall(1000, () => {
+            this.endWave();
+        });
+    }
+}
+endWave() {
+
+    let text = this.add.text(300, 250, "GET READY", {
+        fontSize: '32px',
+        fill: '#ffff00'
+    });
+
+    this.time.delayedCall(1200, () => text.destroy());
+
+    this.time.delayedCall(1500, () => {
+        this.wave++;
+
+        if (this.wave > this.maxWaves) {
+            this.winGame();
+        } else {
+            this.startWave();
+        }
+    });
+}
+
+winGame() {
+
+    this.scene.pause();
+
+    this.add.text(120, 200, "SOBREVIVISTE TODAS LAS OLEADAS", {
+        fontSize: '32px',
+        fill: '#00ff00'
+    });
+
+    this.add.text(300, 280, `Score: ${this.score}`, {
+        fontSize: '28px',
+        fill: '#ffffff'
+    });
+
+    this.add.text(300, 330, `Vida: ${this.life}`, {
+        fontSize: '28px',
+        fill: '#ffffff'
+    });
 }
 
     // 🔄 reload
