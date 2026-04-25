@@ -24,9 +24,10 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.input.removeAllListeners();
         this.wave = 1;
         this.maxWaves = 10;
-
+        this.isGameOver = false;
         this.enemiesAlive = 0;
         this.enemiesToSpawn = 0;
         this.spawning = false;
@@ -184,6 +185,8 @@ class GameScene extends Phaser.Scene {
 
     update() {
 
+    if (this.isGameOver) return;
+
     if (this.isRightDown) {
         this.reload();
         this.isRightDown = false;
@@ -228,19 +231,36 @@ damagePlayer() {
 
 gameOver() {
 
-    // 📴 parar latido si estaba activo
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+
+    // 🚫 cortar input
+    this.isLeftDown = false;
+    this.isRightDown = false;
+
+    // 🛑 frenar TODO lo que siga corriendo
+    if (this.spawnLoop) {
+        this.spawnLoop.remove();
+    }
+
+    this.time.removeAllEvents(); // 🔥 CLAVE (mata delayedCall de enemigos)
+
+    // 🧹 borrar enemigos en pantalla
+    this.targets.clear(true, true);
+
+    // 📴 parar latido
     if (this.heartbeatSound?.isPlaying) {
         this.heartbeatSound.stop();
     }
 
-    // 😱 grito antes de morir
+    // 😱 grito
     this.deathScream.play();
 
-    // 📳 efecto fuerte final
+    // 📳 efectos
     this.cameras.main.shake(400, 0.02);
     this.cameras.main.flash(150, 255, 0, 0);
 
-    // ⏱ después del grito, game over
+    // ⏱ pantalla de game over
     this.time.delayedCall(600, () => {
 
         this.gameoverSound.play();
@@ -250,12 +270,25 @@ gameOver() {
             fill: '#ff0000'
         });
 
-        this.scene.pause();
+        let retry = this.add.text(400, 320, "TRY AGAIN", {
+            fontSize: '32px',
+            fill: '#ffffff',
+            backgroundColor: '#000000aa',
+            padding: { x: 20, y: 10 }
+        })
+        .setOrigin(0.5)
+        .setDepth(20)
+        .setInteractive({ useHandCursor: true });
+
+        retry.on('pointerdown', () => {
+            this.scene.restart();
+        });
+
     });
 }
 // 🔫
 shoot() {
-
+    if (this.isGameOver) return;
     if (this.isReloading) return;
 
     // 🔊 sin balas
