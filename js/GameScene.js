@@ -283,7 +283,19 @@ gameOver() {
         retry.on('pointerdown', () => {
             this.scene.restart();
         });
+        let menu = this.add.text(400, 380, "VOLVER AL MENU", {
+            fontSize: '28px',
+            fill: '#ffffff',
+            backgroundColor: '#000000aa',
+            padding: { x: 20, y: 10 }
+        })
+        .setOrigin(0.5)
+        .setDepth(20)
+        .setInteractive({ useHandCursor: true });
 
+        menu.on('pointerdown', () => {
+            this.scene.start('MenuScene'); // 👈 tu escena de menú
+        });
     });
 }
 // 🔫

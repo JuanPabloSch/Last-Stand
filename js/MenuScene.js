@@ -8,6 +8,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     create() {
+        // volver a cursor normal
+        this.input.setDefaultCursor('default');
+        this.game.canvas.style.cursor = 'default';
         this.add.image(400, 300, 'menu_bg').setDisplaySize(800, 600);
 
         const playButton = this.add.text(400, 300, 'JUGAR', {
