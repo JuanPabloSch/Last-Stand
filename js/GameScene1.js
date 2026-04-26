@@ -5,22 +5,22 @@ class GameScene1 extends Phaser.Scene {
 
     preload() {
         this.load.image('game_bg', 'assets/background/lvl2.png');
-        this.load.audio('shoot', 'assets/sfx/shoot.mp3');
-        this.load.audio('reload', 'assets/sfx/gunreload.mp3');
-        this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
+        this.load.audio('shoot', 'assets/sfx/lvl2/shoot.mp3');
+        this.load.audio('reload', 'assets/sfx/lvl2/gunreload.mp3');
+        this.load.audio('emptyVoice', 'assets/sfx/lvl2/reloadvoice.mp3');
         this.load.image('crosshair', 'assets/ui/crosshair.png');
-        this.load.audio('enemyShoot', 'assets/sfx/enemyshoot.mp3');
-        this.load.audio('grunt', 'assets/sfx/grunt.mp3');
-        this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
-        this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
-        this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
-        this.load.image('enemy1', 'assets/enemies/robot1.png');
-        this.load.image('enemy2', 'assets/enemies/robot2.png');
-        this.load.image('enemy3', 'assets/enemies/robot3.png');
-        this.load.audio('death1', 'assets/sfx/death1.mp3');
-        this.load.audio('death2', 'assets/sfx/death2.mp3');
-        this.load.audio('death3', 'assets/sfx/death3.mp3');
-        this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
+        this.load.audio('enemyShoot', 'assets/sfx/lvl2/enemyshoot.mp3');
+        this.load.audio('grunt', 'assets/sfx/lvl2/grunt.mp3');
+        this.load.audio('heartbeat', 'assets/sfx/lvl2/heartbeat.mp3');
+        this.load.audio('gameoverSound', 'assets/sfx/lvl2/gameover.mp3');
+        this.load.audio('deathScream', 'assets/sfx/lvl2/deathscream.mp3');
+        this.load.image('enemy1', 'assets/enemies/lvl2/robot1.png');
+        this.load.image('enemy2', 'assets/enemies/lvl2/robot2.png');
+        this.load.image('enemy3', 'assets/enemies/lvl2/robot3.png');
+        this.load.audio('death1', 'assets/sfx/lvl2/death1.mp3');
+        this.load.audio('death2', 'assets/sfx/lvl2/death2.mp3');
+        this.load.audio('death3', 'assets/sfx/lvl2/death3.mp3');
+        this.load.audio('getReadySound', 'assets/sfx/lvl2/getready.mp3');
         this.load.audio('gameMusic', 'assets/music/game.mp3');
     }
 
