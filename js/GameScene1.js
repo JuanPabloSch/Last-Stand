@@ -6,22 +6,22 @@ class GameScene1 extends Phaser.Scene {
     preload() {
         this.load.image('game_bg', 'assets/background/lvl2.png');
         this.load.audio('shoot', 'assets/sfx/lvl2/shoot.mp3');
-        this.load.audio('reload', 'assets/sfx/lvl2/gunreload.mp3');
-        this.load.audio('emptyVoice', 'assets/sfx/lvl2/reloadvoice.mp3');
+        this.load.audio('reload', 'assets/sfx/gunreload.mp3');
+        this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
         this.load.image('crosshair', 'assets/ui/crosshair.png');
         this.load.audio('enemyShoot', 'assets/sfx/lvl2/enemyshoot.mp3');
-        this.load.audio('grunt', 'assets/sfx/lvl2/grunt.mp3');
-        this.load.audio('heartbeat', 'assets/sfx/lvl2/heartbeat.mp3');
-        this.load.audio('gameoverSound', 'assets/sfx/lvl2/gameover.mp3');
-        this.load.audio('deathScream', 'assets/sfx/lvl2/deathscream.mp3');
+        this.load.audio('grunt', 'assets/sfx/grunt.mp3');
+        this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
+        this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
+        this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
         this.load.image('enemy1', 'assets/enemies/lvl2/robot1.png');
         this.load.image('enemy2', 'assets/enemies/lvl2/robot2.png');
         this.load.image('enemy3', 'assets/enemies/lvl2/robot3.png');
         this.load.audio('death1', 'assets/sfx/lvl2/death1.mp3');
         this.load.audio('death2', 'assets/sfx/lvl2/death2.mp3');
         this.load.audio('death3', 'assets/sfx/lvl2/death3.mp3');
-        this.load.audio('getReadySound', 'assets/sfx/lvl2/getready.mp3');
-        this.load.audio('gameMusic', 'assets/music/game.mp3');
+        this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
+        this.load.audio('gameMusic', 'assets/music/lvl2.mp3');
     }
 
     create() {
@@ -54,6 +54,7 @@ class GameScene1 extends Phaser.Scene {
         this.deathScream = this.sound.add('deathScream');
         this.gameoverSound = this.sound.add('gameoverSound');
         this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
+        this.flyingEnemy = 'enemy3';
         this.lowHpActive = false;
         this.gameMusic = this.sound.add('gameMusic', {
             loop: true,
@@ -399,54 +400,111 @@ this.targets.children.iterate((target) => {
     }
 }
 
-    // 🎯 spawn target
-spawnTarget() {
+    spawnTarget() {
 
-    const positions = [
-
-        // 🟤 PISO ABAJO
-        { x: 53, y: 490 },
-        { x: 188, y: 475 },
-        { x: 353, y: 485 },
-        { x: 404, y: 463 },
-        { x: 507, y: 490 },
-        { x: 686, y: 449 },
-        { x: 656, y: 501 },
-        { x: 55, y: 446 },
-        { x: 390, y: 448 },
-        { x: 749, y: 475 },
-
-        // 🪜 ESCALERA
-        { x: 727, y: 215 },
-        { x: 558, y: 200 },
-
-        // 🟡 PISO ARRIBA (ligero random en X)
-        { x: Phaser.Math.Between(80, 700), y: 205 },
-        { x: Phaser.Math.Between(80, 700), y: 200 }
-    ];
-
-    const pos = Phaser.Math.RND.pick(positions);
     const type = Phaser.Math.RND.pick(this.enemyTypes);
 
-    const target = this.add.image(pos.x, pos.y, type);
+    let x, y;
 
-    // 🔥 tamaño base SIEMPRE
+    // =========================
+    // 🚁 VOLADOR (ARRIBA)
+    // =========================
+    if (type === this.flyingEnemy) {
+
+        x = Phaser.Math.Between(100, 700);
+        y = Phaser.Math.Between(80, 200);
+
+    } else {
+
+        // =========================
+        // 👟 SUELO (ABAJO)
+        // =========================
+        const groundPositions = [
+            { x: 100, y: 480 },
+            { x: 250, y: 490 },
+            { x: 400, y: 470 },
+            { x: 550, y: 490 },
+            { x: 700, y: 460 }
+        ];
+
+        const pos = Phaser.Math.RND.pick(groundPositions);
+        x = pos.x;
+        y = pos.y;
+    }
+
+    const target = this.add.image(x, y, type);
+    target.type = type;
+
+    // tamaño
     target.displayWidth = 80;
     target.scaleY = target.scaleX;
-
-    // 🧠 ajuste por altura
-    if (pos.y < 300) {
-        target.setScale(target.scaleX * 0.8); // 👈 más chico arriba
-    }
 
     target.setTint(0xff8800);
     target.state = 0;
 
     this.targets.add(target);
-    if (pos.x >= 400) {
-    target.setFlipX(true);  // derecha → se da vuelta
-    } else {
-    target.setFlipX(false); // izquierda → normal
+
+    // dirección
+    target.setFlipX(x >= 400);
+
+    // =========================
+    // MOVIMIENTO
+    // =========================
+
+    if (target.type === this.flyingEnemy) {
+
+        // 🚁 flotante libre
+        this.tweens.add({
+            targets: target,
+            x: Phaser.Math.Between(100, 700),
+            y: Phaser.Math.Between(80, 200),
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        if (target.type === this.flyingEnemy) {
+
+            target.y = Phaser.Math.Between(80, 200);
+
+            // movimiento principal
+            this.tweens.add({
+                targets: target,
+                x: Phaser.Math.Between(100, 700),
+                y: Phaser.Math.Between(80, 200),
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+            // hover
+            this.tweens.add({
+                targets: target,
+                y: '+=10',
+                duration: 800,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+        } else {
+
+            // 👟 enemigos de piso → NO se mueven
+        }
+
+        // 👟 patrulla en suelo
+        const moveDistance = Phaser.Math.Between(80, 150);
+
+        this.tweens.add({
+            targets: target,
+            x: target.x + moveDistance,
+            duration: 1500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Linear'
+        });
     }
 
     // 🟡 warning
@@ -459,15 +517,19 @@ spawnTarget() {
     // 🔴 danger
     this.time.delayedCall(2400, () => {
         if (!target.active) return;
+
         target.setTint(0xff0000);
         target.state = 2;
 
         this.damagePlayer();
+
+        this.tweens.killTweensOf(target);
         target.destroy();
-        
+
         this.enemiesAlive--;
         this.checkWaveEnd();
     });
+
     this.enemiesAlive++;
     this.enemiesToSpawn--;
 }
@@ -481,6 +543,7 @@ hitTarget(target, isHeadshot = false) {
     Phaser.Math.RND.pick(['death1','death2','death3'])
     );
 
+    this.tweens.killTweensOf(target);
     target.destroy();
 
     this.enemiesAlive--;

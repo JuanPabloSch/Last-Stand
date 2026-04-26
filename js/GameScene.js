@@ -21,7 +21,7 @@ class GameScene extends Phaser.Scene {
         this.load.audio('death2', 'assets/sfx/death2.mp3');
         this.load.audio('death3', 'assets/sfx/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
-        this.load.audio('gameMusic', 'assets/music/game.mp3');
+        this.load.audio('gameMusic', 'assets/music/lvl1.mp3');
     }
 
     create() {
