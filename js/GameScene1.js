@@ -1,10 +1,10 @@
-class GameScene extends Phaser.Scene {
+class GameScene1 extends Phaser.Scene {
     constructor() {
-        super({ key: 'GameScene' });
+        super({ key: 'GameScene1' });
     }
 
     preload() {
-        this.load.image('game_bg', 'assets/background/lvl1.png');
+        this.load.image('game_bg', 'assets/background/lvl2.png');
         this.load.audio('shoot', 'assets/sfx/shoot.mp3');
         this.load.audio('reload', 'assets/sfx/gunreload.mp3');
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
@@ -14,9 +14,9 @@ class GameScene extends Phaser.Scene {
         this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
         this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
         this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
-        this.load.image('enemy1', 'assets/enemies/human1.png');
-        this.load.image('enemy2', 'assets/enemies/human2.png');
-        this.load.image('enemy3', 'assets/enemies/human3.png');
+        this.load.image('enemy1', 'assets/enemies/robot1.png');
+        this.load.image('enemy2', 'assets/enemies/robot2.png');
+        this.load.image('enemy3', 'assets/enemies/robot3.png');
         this.load.audio('death1', 'assets/sfx/death1.mp3');
         this.load.audio('death2', 'assets/sfx/death2.mp3');
         this.load.audio('death3', 'assets/sfx/death3.mp3');
