@@ -432,6 +432,12 @@ this.targets.children.iterate((target) => {
 
         const target = this.add.image(x, y, type);
         target.type = type;
+        // vida según tipo
+        if (type === this.flyingEnemy) {
+            target.health = 1; // aire
+        } else {
+            target.health = 2; // suelo
+        }
 
         // =========================
         // 📏 ESCALA
@@ -505,9 +511,25 @@ this.targets.children.iterate((target) => {
     }
 
     // 💥 hit
-hitTarget(target, isHeadshot = false) {
+    hitTarget(target, isHeadshot = false) {
 
     if (!target.active) return;
+
+    // 🎯 HEADSHOT = muerte directa
+    if (isHeadshot) {
+        target.health = 0;
+    } else {
+        target.health--;
+    }
+
+    // ❌ si sigue vivo, no muere
+    if (target.health > 0) {
+
+        // feedback visual opcional
+        target.setTint(0xffffff);
+
+        return;
+    }
 
         this.sound.play(
     Phaser.Math.RND.pick(['death1','death2','death3'])
