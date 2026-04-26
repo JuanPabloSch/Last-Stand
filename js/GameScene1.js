@@ -402,73 +402,61 @@ this.targets.children.iterate((target) => {
 
     spawnTarget() {
 
-    const type = Phaser.Math.RND.pick(this.enemyTypes);
+        const type = Phaser.Math.RND.pick(this.enemyTypes);
 
-    let x, y;
-
-    // =========================
-    // 🚁 VOLADOR (ARRIBA)
-    // =========================
-    if (type === this.flyingEnemy) {
-
-        x = Phaser.Math.Between(100, 700);
-        y = Phaser.Math.Between(80, 200);
-
-    } else {
+        let x, y;
 
         // =========================
-        // 👟 SUELO (ABAJO)
+        // 🚁 VOLADOR (ARRIBA)
         // =========================
-        const groundPositions = [
-            { x: 100, y: 480 },
-            { x: 250, y: 490 },
-            { x: 400, y: 470 },
-            { x: 550, y: 490 },
-            { x: 700, y: 460 }
-        ];
+        if (type === this.flyingEnemy) {
 
-        const pos = Phaser.Math.RND.pick(groundPositions);
-        x = pos.x;
-        y = pos.y;
-    }
+            x = Phaser.Math.Between(100, 700);
+            y = Phaser.Math.Between(80, 200);
 
-    const target = this.add.image(x, y, type);
-    target.type = type;
+        } else {
 
-    // tamaño
-    target.displayWidth = 80;
-    target.scaleY = target.scaleX;
+            // =========================
+            // 👟 SUELO (TÚNEL DINÁMICO)
+            // =========================
 
-    target.setTint(0xff8800);
-    target.state = 0;
+            // profundidad
+            y = Phaser.Math.Between(300, 500);
 
-    this.targets.add(target);
+            // ancho según profundidad
+            const range = this.getTunnelXRange(y);
 
-    // dirección
-    target.setFlipX(x >= 400);
+            // posición dentro del túnel
+            x = Phaser.Math.Between(range.minX, range.maxX);
+        }
 
-    // =========================
-    // MOVIMIENTO
-    // =========================
+        const target = this.add.image(x, y, type);
+        target.type = type;
 
-    if (target.type === this.flyingEnemy) {
+        // =========================
+        // 📏 ESCALA
+        // =========================
+        if (type === this.flyingEnemy) {
+            target.setScale(0.2);
+        } else {
+            const scale = this.getScaleByY(y);
+            target.setScale(scale);
+            target.setDepth(y); // mejora visual
+        }
 
-        // 🚁 flotante libre
-        this.tweens.add({
-            targets: target,
-            x: Phaser.Math.Between(100, 700),
-            y: Phaser.Math.Between(80, 200),
-            duration: 2000,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+        target.setTint(0xff8800);
+        target.state = 0;
 
-        if (target.type === this.flyingEnemy) {
+        this.targets.add(target);
 
-            target.y = Phaser.Math.Between(80, 200);
+        // dirección
+        target.setFlipX(x >= 400);
 
-            // movimiento principal
+        // =========================
+        // 🎞 MOVIMIENTO (solo volador)
+        // =========================
+        if (type === this.flyingEnemy) {
+
             this.tweens.add({
                 targets: target,
                 x: Phaser.Math.Between(100, 700),
@@ -479,7 +467,6 @@ this.targets.children.iterate((target) => {
                 ease: 'Sine.easeInOut'
             });
 
-            // hover
             this.tweens.add({
                 targets: target,
                 y: '+=10',
@@ -488,51 +475,34 @@ this.targets.children.iterate((target) => {
                 repeat: -1,
                 ease: 'Sine.easeInOut'
             });
-
-        } else {
-
-            // 👟 enemigos de piso → NO se mueven
         }
 
-        // 👟 patrulla en suelo
-        const moveDistance = Phaser.Math.Between(80, 150);
-
-        this.tweens.add({
-            targets: target,
-            x: target.x + moveDistance,
-            duration: 1500,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Linear'
+        // 🟡 WARNING
+        this.time.delayedCall(1200, () => {
+            if (!target.active) return;
+            target.setTint(0xffcc00);
+            target.state = 1;
         });
+
+        // 🔴 DANGER
+        this.time.delayedCall(2400, () => {
+            if (!target.active) return;
+
+            target.setTint(0xff0000);
+            target.state = 2;
+
+            this.damagePlayer();
+
+            this.tweens.killTweensOf(target);
+            target.destroy();
+
+            this.enemiesAlive--;
+            this.checkWaveEnd();
+        });
+
+        this.enemiesAlive++;
+        this.enemiesToSpawn--;
     }
-
-    // 🟡 warning
-    this.time.delayedCall(1200, () => {
-        if (!target.active) return;
-        target.setTint(0xffcc00);
-        target.state = 1;
-    });
-
-    // 🔴 danger
-    this.time.delayedCall(2400, () => {
-        if (!target.active) return;
-
-        target.setTint(0xff0000);
-        target.state = 2;
-
-        this.damagePlayer();
-
-        this.tweens.killTweensOf(target);
-        target.destroy();
-
-        this.enemiesAlive--;
-        this.checkWaveEnd();
-    });
-
-    this.enemiesAlive++;
-    this.enemiesToSpawn--;
-}
 
     // 💥 hit
 hitTarget(target, isHeadshot = false) {
@@ -676,5 +646,37 @@ updateLifeUI() {
 }
 updateScoreUI() {
     this.scoreText.setText(`Score: ${this.score}`);
+}
+getScaleByY(y) {
+
+    const minY = 80;
+    const maxY = 500;
+
+    const minScale = 0.2;
+    const maxScale = 0.3;
+
+    const t = Phaser.Math.Clamp((y - minY) / (maxY - minY), 0, 1);
+
+    return minScale + t * (maxScale - minScale);
+}
+getTunnelXRange(y) {
+
+    const minY = 80;   // fondo del túnel
+    const maxY = 500;  // cerca del jugador
+
+    const t = Phaser.Math.Clamp((y - minY) / (maxY - minY), 0, 1);
+
+    // ancho del túnel según profundidad
+    const minWidth = 100;  // arriba (angosto)
+    const maxWidth = 700;  // abajo (ancho)
+
+    const width = minWidth + t * (maxWidth - minWidth);
+
+    const centerX = 400;
+
+    return {
+        minX: centerX - width / 2,
+        maxX: centerX + width / 2
+    };
 }
 }
