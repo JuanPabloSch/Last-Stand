@@ -44,7 +44,7 @@ class GameScene1 extends Phaser.Scene {
         this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
         this.crosshair = this.add.image(400, 300, 'crosshair');
         this.crosshair.setScale(0.08); // ajustá tamaño
-        this.crosshair.setDepth(10);
+        this.crosshair.setDepth(1000);
         this.enemyShootSound = this.sound.add('enemyShoot');
         this.gruntSound = this.sound.add('grunt');
         this.heartbeatSound = this.sound.add('heartbeat', {

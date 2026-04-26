@@ -23,44 +23,67 @@ class MenuScene extends Phaser.Scene {
         fill: '#ffffff'
     });
 
+    const createLevelCard = (x, y, texture, labelText, color, sceneKey) => {
+
+        const thumb = this.add.image(0, 0, texture).setScale(0.11);
+
+        // 🧱 fondo blanco
+        const bg = this.add.rectangle(
+            0,
+            0,
+            thumb.displayWidth + 14,
+            thumb.displayHeight + 14,
+            0xffffff
+        );
+
+        // 🏷️ etiqueta arriba
+        const label = this.add.text(
+            0,
+            -thumb.displayHeight / 2 - 16,
+            labelText,
+            {
+                fontSize: '16px',
+                color: color,
+                backgroundColor: '#000000aa',
+                padding: { x: 6, y: 2 }
+            }
+        ).setOrigin(0.5);
+
+        // 📦 container
+        const container = this.add.container(x, y, [bg, thumb, label]);
+
+        // 🖱️ interacción
+        container.setSize(bg.width, bg.height);
+        container.setInteractive({ useHandCursor: true });
+
+        container.on('pointerdown', () => {
+            this.scene.start(sceneKey);
+        });
+
+        container.on('pointerover', () => {
+            container.setScale(1.08);
+        });
+
+        container.on('pointerout', () => {
+            container.setScale(1);
+        });
+
+        return container;
+    };
+
     // progreso guardado
     const lvl1Done = localStorage.getItem('lvl1');
     const lvl2Done = localStorage.getItem('lvl2');
     const lvl3Done = localStorage.getItem('lvl3');
 
     // 🟩 NIVEL 1
-    let lvl1 = this.add.image(200, 300, 'lvl1')
-        .setScale(0.11)
-        .setInteractive({ useHandCursor: true });
+    createLevelCard(200, 300, 'lvl1', 'EASY 👨‍✈️', '#00ff88', 'GameScene');
 
-    lvl1.on('pointerdown', () => {
-        this.scene.start('GameScene');
-    });
-    lvl1.on('pointerover', () => lvl1.setScale(0.12));
-    lvl1.on('pointerout', () => lvl1.setScale(0.11));
+    // 🟨 NIVEL 2
+    createLevelCard(400, 300, 'lvl2', 'NORMAL 🤖', '#ffaa00', 'GameScene1');
 
-
-// 🟨 NIVEL 2
-    let lvl2 = this.add.image(400, 300, 'lvl2')
-        .setScale(0.11)
-        .setInteractive({ useHandCursor: true });
-
-    lvl2.on('pointerdown', () => {
-        this.scene.start('GameScene1');
-    });
-    lvl2.on('pointerover', () => lvl2.setScale(0.12));
-    lvl2.on('pointerout', () => lvl2.setScale(0.11));
-
-// 🟥 NIVEL 3
-    let lvl3 = this.add.image(600, 300, 'lvl3')
-        .setScale(0.11)
-        .setInteractive({ useHandCursor: true });
-
-    lvl3.on('pointerdown', () => {
-        this.scene.start('GameScene2');
-    });
-    lvl3.on('pointerover', () => lvl3.setScale(0.12));
-    lvl3.on('pointerout', () => lvl3.setScale(0.11));
+    // 🟥 NIVEL 3
+    createLevelCard(600, 300, 'lvl3', 'HARD 👽', '#ff4444', 'GameScene2');
 
     // ⭐ FINAL (solo si completó los 3)
     if (lvl1Done && lvl2Done && lvl3Done) {
@@ -71,10 +94,10 @@ class MenuScene extends Phaser.Scene {
             backgroundColor: '#000'
         })
         .setOrigin(0.5)
-        .setInteractive();
+        .setInteractive({ useHandCursor: true });
 
         finalBtn.on('pointerdown', () => {
-            this.scene.start('BossScene'); // 👈 tu boss final
+            this.scene.start('BossScene');
         });
     }
     }
