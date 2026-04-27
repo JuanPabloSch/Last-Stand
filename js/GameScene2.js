@@ -4,24 +4,24 @@ class GameScene2 extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game_bg', 'assets/background/lvl3.png');
-        this.load.audio('shoot', 'assets/sfx/lvl3/shoot.mp3');
+        this.load.image('game_bg3', 'assets/background/lvl3.png');
+        this.load.audio('shoot3', 'assets/sfx/lvl3/shoot.mp3');
         this.load.audio('reload', 'assets/sfx/gunreload.mp3');
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
         this.load.image('crosshair', 'assets/ui/crosshair.png');
-        this.load.audio('enemyShoot', 'assets/sfx/lvl3/enemyshoot.mp3');
+        this.load.audio('enemyShoot3', 'assets/sfx/lvl3/enemyshoot.mp3');
         this.load.audio('grunt', 'assets/sfx/grunt.mp3');
         this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
         this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
         this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
-        this.load.image('enemy1', 'assets/enemies/lvl3/alien1.png');
-        this.load.image('enemy2', 'assets/enemies/lvl3/alien2.png');
-        this.load.image('enemy3', 'assets/enemies/lvl3/alien3.png');
-        this.load.audio('death1', 'assets/sfx/lvl3/death1.mp3');
-        this.load.audio('death2', 'assets/sfx/lvl3/death2.mp3');
-        this.load.audio('death3', 'assets/sfx/lvl3/death3.mp3');
+        this.load.image('aenemy1', 'assets/enemies/lvl3/alien1.png');
+        this.load.image('aenemy2', 'assets/enemies/lvl3/alien2.png');
+        this.load.image('aenemy3', 'assets/enemies/lvl3/alien3.png');
+        this.load.audio('adeath1', 'assets/sfx/lvl3/death1.mp3');
+        this.load.audio('adeath2', 'assets/sfx/lvl3/death2.mp3');
+        this.load.audio('adeath3', 'assets/sfx/lvl3/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
-        this.load.audio('gameMusic', 'assets/music/lvl3.mp3');
+        this.load.audio('gameMusic3', 'assets/music/lvl3.mp3');
         this.load.audio('thunder1', 'assets/sfx/lvl3/thunder1.mp3');
         this.load.audio('thunder2', 'assets/sfx/lvl3/thunder2.mp3');
     }
@@ -35,19 +35,19 @@ class GameScene2 extends Phaser.Scene {
         this.enemiesToSpawn = 0;
         this.spawning = false;
         this.getReadySound = this.sound.add('getReadySound');
-        this.maxAmmo = 10;
+        this.maxAmmo = 6;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
-        this.shootSound = this.sound.add('shoot');
+        this.shootSound = this.sound.add('shoot3');
         this.reloadSound = this.sound.add('reload');
         this.emptyVoice = this.sound.add('emptyVoice');
         this.emptyVoiceCooldown = false;
         this.prevAmmo = this.ammo;
-        this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
+        this.add.image(400, 300, 'game_bg3').setDisplaySize(800, 600);
         this.crosshair = this.add.image(400, 300, 'crosshair');
         this.crosshair.setScale(0.08); // ajustá tamaño
         this.crosshair.setDepth(1000);
-        this.enemyShootSound = this.sound.add('enemyShoot');
+        this.enemyShootSound = this.sound.add('enemyShoot3');
         this.gruntSound = this.sound.add('grunt');
         this.heartbeatSound = this.sound.add('heartbeat', {
         loop: true,
@@ -55,14 +55,14 @@ class GameScene2 extends Phaser.Scene {
         });
         this.deathScream = this.sound.add('deathScream');
         this.gameoverSound = this.sound.add('gameoverSound');
-        this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
-        this.flyingEnemy = 'enemy3';
+        this.enemyTypes = ['aenemy1', 'aenemy2', 'aenemy3'];
+        this.flyingEnemy = 'aenemy3';
         this.lowHpActive = false;
-        if (this.sound.get('gameMusic')) {
-        this.sound.stopByKey('gameMusic');
+        if (this.sound.get('gameMusic3')) {
+        this.sound.stopByKey('gameMusic3');
         }
 
-        this.gameMusic = this.sound.add('gameMusic', {
+        this.gameMusic = this.sound.add('gameMusic3', {
             loop: true,
             volume: 0.45
         });
@@ -320,8 +320,14 @@ gameOver() {
         .setInteractive({ useHandCursor: true });
 
         menu.on('pointerdown', () => {
-            this.scene.start('MenuScene');
-        });
+
+    this.sound.stopAll();
+    this.tweens.killAll();
+    this.time.removeAllEvents();
+
+    this.scene.stop();
+    this.scene.start('MenuScene');
+    });
 
     });
 }
@@ -500,7 +506,7 @@ this.targets.children.iterate((target) => {
         // =========================
         // 🟡 WARNING
         // =========================
-        this.time.delayedCall(1200, () => {
+        this.time.delayedCall(1000, () => {
             if (!target.active) return;
 
             target.setTint(0xffcc00);
@@ -510,7 +516,7 @@ this.targets.children.iterate((target) => {
         // =========================
         // 🔴 DANGER
         // =========================
-        this.time.delayedCall(2400, () => {
+        this.time.delayedCall(2100, () => {
             if (!target.active) return;
 
             target.setTint(0xff0000);
@@ -551,7 +557,7 @@ this.targets.children.iterate((target) => {
     }
 
         this.sound.play(
-    Phaser.Math.RND.pick(['death1','death2','death3'])
+    Phaser.Math.RND.pick(['adeath1','adeath2','adeath3'])
     );
 
     this.tweens.killTweensOf(target);
@@ -643,7 +649,13 @@ winGame() {
     .setInteractive({ useHandCursor: true });
 
     menu.on('pointerdown', () => {
-        this.scene.start('MenuScene');
+
+    this.sound.stopAll();
+    this.tweens.killAll();
+    this.time.removeAllEvents();
+
+    this.scene.stop();
+    this.scene.start('MenuScene');
     });
 }
 

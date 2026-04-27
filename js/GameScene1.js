@@ -4,24 +4,24 @@ class GameScene1 extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game_bg', 'assets/background/lvl2.png');
-        this.load.audio('shoot', 'assets/sfx/lvl2/shoot.mp3');
+        this.load.image('game_bg2', 'assets/background/lvl2.png');
+        this.load.audio('shoot2', 'assets/sfx/lvl2/shoot.mp3');
         this.load.audio('reload', 'assets/sfx/gunreload.mp3');
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
         this.load.image('crosshair', 'assets/ui/crosshair.png');
-        this.load.audio('enemyShoot', 'assets/sfx/lvl2/enemyshoot.mp3');
+        this.load.audio('enemyShoot2', 'assets/sfx/lvl2/enemyshoot.mp3');
         this.load.audio('grunt', 'assets/sfx/grunt.mp3');
         this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
         this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
         this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
-        this.load.image('enemy1', 'assets/enemies/lvl2/robot1.png');
-        this.load.image('enemy2', 'assets/enemies/lvl2/robot2.png');
-        this.load.image('enemy3', 'assets/enemies/lvl2/robot3.png');
-        this.load.audio('death1', 'assets/sfx/lvl2/death1.mp3');
-        this.load.audio('death2', 'assets/sfx/lvl2/death2.mp3');
-        this.load.audio('death3', 'assets/sfx/lvl2/death3.mp3');
+        this.load.image('renemy1', 'assets/enemies/lvl2/robot1.png');
+        this.load.image('renemy2', 'assets/enemies/lvl2/robot2.png');
+        this.load.image('renemy3', 'assets/enemies/lvl2/robot3.png');
+        this.load.audio('rdeath1', 'assets/sfx/lvl2/death1.mp3');
+        this.load.audio('rdeath2', 'assets/sfx/lvl2/death2.mp3');
+        this.load.audio('rdeath3', 'assets/sfx/lvl2/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
-        this.load.audio('gameMusic', 'assets/music/lvl2.mp3');
+        this.load.audio('gameMusic2', 'assets/music/lvl2.mp3');
     }
 
     create() {
@@ -36,16 +36,16 @@ class GameScene1 extends Phaser.Scene {
         this.maxAmmo = 10;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
-        this.shootSound = this.sound.add('shoot');
+        this.shootSound = this.sound.add('shoot2');
         this.reloadSound = this.sound.add('reload');
         this.emptyVoice = this.sound.add('emptyVoice');
         this.emptyVoiceCooldown = false;
         this.prevAmmo = this.ammo;
-        this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
+        this.add.image(400, 300, 'game_bg2').setDisplaySize(800, 600);
         this.crosshair = this.add.image(400, 300, 'crosshair');
         this.crosshair.setScale(0.08); // ajustá tamaño
         this.crosshair.setDepth(1000);
-        this.enemyShootSound = this.sound.add('enemyShoot');
+        this.enemyShootSound = this.sound.add('enemyShoot2');
         this.gruntSound = this.sound.add('grunt');
         this.heartbeatSound = this.sound.add('heartbeat', {
         loop: true,
@@ -53,10 +53,10 @@ class GameScene1 extends Phaser.Scene {
         });
         this.deathScream = this.sound.add('deathScream');
         this.gameoverSound = this.sound.add('gameoverSound');
-        this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
-        this.flyingEnemy = 'enemy3';
+        this.enemyTypes = ['renemy1', 'renemy2', 'renemy3'];
+        this.flyingEnemy = 'renemy3';
         this.lowHpActive = false;
-        this.gameMusic = this.sound.add('gameMusic', {
+        this.gameMusic = this.sound.add('gameMusic2', {
             loop: true,
             volume: 0.5
         });
@@ -309,8 +309,14 @@ gameOver() {
         .setInteractive({ useHandCursor: true });
 
         menu.on('pointerdown', () => {
-            this.scene.start('MenuScene');
-        });
+
+        this.sound.stopAll();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
+
+        this.scene.stop();
+        this.scene.start('MenuScene');
+    });
 
     });
 }
@@ -520,7 +526,7 @@ this.targets.children.iterate((target) => {
     }
 
         this.sound.play(
-    Phaser.Math.RND.pick(['death1','death2','death3'])
+    Phaser.Math.RND.pick(['rdeath1','rdeath2','rdeath3'])
     );
 
     this.tweens.killTweensOf(target);
@@ -612,7 +618,13 @@ winGame() {
     .setInteractive({ useHandCursor: true });
 
     menu.on('pointerdown', () => {
-        this.scene.start('MenuScene');
+
+    this.sound.stopAll();
+    this.tweens.killAll();
+    this.time.removeAllEvents();
+
+    this.scene.stop();
+    this.scene.start('MenuScene');
     });
 }
 

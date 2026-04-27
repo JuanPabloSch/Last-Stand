@@ -4,24 +4,24 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('game_bg', 'assets/background/lvl1.png');
-        this.load.audio('shoot', 'assets/sfx/shoot.mp3');
+        this.load.image('game_bg1', 'assets/background/lvl1.png');
+        this.load.audio('shoot1', 'assets/sfx/shoot.mp3');
         this.load.audio('reload', 'assets/sfx/gunreload.mp3');
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
         this.load.image('crosshair', 'assets/ui/crosshair.png');
-        this.load.audio('enemyShoot', 'assets/sfx/enemyshoot.mp3');
+        this.load.audio('enemyShoot1', 'assets/sfx/enemyshoot.mp3');
         this.load.audio('grunt', 'assets/sfx/grunt.mp3');
         this.load.audio('heartbeat', 'assets/sfx/heartbeat.mp3');
         this.load.audio('gameoverSound', 'assets/sfx/gameover.mp3');
         this.load.audio('deathScream', 'assets/sfx/deathscream.mp3');
-        this.load.image('enemy1', 'assets/enemies/human1.png');
-        this.load.image('enemy2', 'assets/enemies/human2.png');
-        this.load.image('enemy3', 'assets/enemies/human3.png');
-        this.load.audio('death1', 'assets/sfx/death1.mp3');
-        this.load.audio('death2', 'assets/sfx/death2.mp3');
-        this.load.audio('death3', 'assets/sfx/death3.mp3');
+        this.load.image('henemy1', 'assets/enemies/human1.png');
+        this.load.image('henemy2', 'assets/enemies/human2.png');
+        this.load.image('henemy3', 'assets/enemies/human3.png');
+        this.load.audio('hdeath1', 'assets/sfx/death1.mp3');
+        this.load.audio('hdeath2', 'assets/sfx/death2.mp3');
+        this.load.audio('hdeath3', 'assets/sfx/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
-        this.load.audio('gameMusic', 'assets/music/lvl1.mp3');
+        this.load.audio('gameMusic1', 'assets/music/lvl1.mp3');
     }
 
     create() {
@@ -36,16 +36,16 @@ class GameScene extends Phaser.Scene {
         this.maxAmmo = 6;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
-        this.shootSound = this.sound.add('shoot');
+        this.shootSound = this.sound.add('shoot1');
         this.reloadSound = this.sound.add('reload');
         this.emptyVoice = this.sound.add('emptyVoice');
         this.emptyVoiceCooldown = false;
         this.prevAmmo = this.ammo;
-        this.add.image(400, 300, 'game_bg').setDisplaySize(800, 600);
+        this.add.image(400, 300, 'game_bg1').setDisplaySize(800, 600);
         this.crosshair = this.add.image(400, 300, 'crosshair');
         this.crosshair.setScale(0.08); // ajustá tamaño
         this.crosshair.setDepth(10);
-        this.enemyShootSound = this.sound.add('enemyShoot');
+        this.enemyShootSound = this.sound.add('enemyShoot1');
         this.gruntSound = this.sound.add('grunt');
         this.heartbeatSound = this.sound.add('heartbeat', {
         loop: true,
@@ -53,9 +53,9 @@ class GameScene extends Phaser.Scene {
         });
         this.deathScream = this.sound.add('deathScream');
         this.gameoverSound = this.sound.add('gameoverSound');
-        this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
+        this.enemyTypes = ['henemy1', 'henemy2', 'henemy3'];
         this.lowHpActive = false;
-        this.gameMusic = this.sound.add('gameMusic', {
+        this.gameMusic = this.sound.add('gameMusic1', {
             loop: true,
             volume: 0.5
         });
@@ -320,8 +320,14 @@ gameOver() {
         .setInteractive({ useHandCursor: true });
 
         menu.on('pointerdown', () => {
-            this.scene.start('MenuScene');
-        });
+
+        this.sound.stopAll();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
+
+        this.scene.stop();
+        this.scene.start('MenuScene');
+    });
 
     });
 }
@@ -478,7 +484,7 @@ hitTarget(target, isHeadshot = false) {
     if (!target.active) return;
 
         this.sound.play(
-    Phaser.Math.RND.pick(['death1','death2','death3'])
+    Phaser.Math.RND.pick(['hdeath1','hdeath2','hdeath3'])
     );
 
     target.destroy();
@@ -569,8 +575,14 @@ winGame() {
     .setInteractive({ useHandCursor: true });
 
     menu.on('pointerdown', () => {
-        this.scene.start('MenuScene');
-    });
+
+    this.sound.stopAll();
+    this.tweens.killAll();
+    this.time.removeAllEvents();
+
+    this.scene.stop();
+    this.scene.start('MenuScene');
+});
 }
 
     // 🔄 reload
