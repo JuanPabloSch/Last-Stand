@@ -540,14 +540,16 @@ endWave() {
 }
 
 winGame() {
-    localStorage.setItem('lvl1', 'true');
+
     this.isGameOver = true;
+
+    // 🧠 guardar progreso del nivel actual (IMPORTANTE)
+    localStorage.setItem('lvl1', 'true');
 
     // 🖤 fondo
     let fade = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7)
         .setDepth(100);
 
-    // 🟢 textos
     this.add.text(120, 200, "SOBREVIVISTE TODAS LAS OLEADAS", {
         fontSize: '32px',
         fill: '#00ff00'
@@ -563,8 +565,7 @@ winGame() {
         fill: '#ffffff'
     }).setDepth(200);
 
-    // ⬅ botón
-    let menu = this.add.text(400, 420, "VOLVER AL MENU", {
+    const menu = this.add.text(400, 420, "VOLVER AL MENU", {
         fontSize: '30px',
         fill: '#ffffff',
         backgroundColor: '#000000aa',
@@ -576,13 +577,13 @@ winGame() {
 
     menu.on('pointerdown', () => {
 
-    this.sound.stopAll();
-    this.tweens.killAll();
-    this.time.removeAllEvents();
+        this.sound.stopAll();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
 
-    this.scene.stop();
-    this.scene.start('MenuScene');
-});
+        this.scene.stop();
+        this.scene.start('MenuScene');
+    });
 }
 
     // 🔄 reload

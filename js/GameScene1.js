@@ -583,7 +583,9 @@ endWave() {
 }
 
 winGame() {
-    localStorage.setItem('lvl2', 'true');
+
+    localStorage.setItem('lvl2', 'true'); // ✔ correcto
+
     this.isGameOver = true;
 
     // 🖤 fondo
@@ -606,7 +608,7 @@ winGame() {
         fill: '#ffffff'
     }).setDepth(200);
 
-    // ⬅ botón
+    // ⬅ botón menu
     let menu = this.add.text(400, 420, "VOLVER AL MENU", {
         fontSize: '30px',
         fill: '#ffffff',
@@ -619,12 +621,12 @@ winGame() {
 
     menu.on('pointerdown', () => {
 
-    this.sound.stopAll();
-    this.tweens.killAll();
-    this.time.removeAllEvents();
+        this.sound.stopAll();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
 
-    this.scene.stop();
-    this.scene.start('MenuScene');
+        this.scene.stop();
+        this.scene.start('MenuScene');
     });
 }
 

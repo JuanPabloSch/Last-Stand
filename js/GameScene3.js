@@ -29,6 +29,7 @@ class GameScene3 extends Phaser.Scene {
 
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
         this.load.audio('hit', 'assets/sfx/grunt.mp3');
+        this.load.audio('gameOver', 'assets/sfx/gameover.mp3');
     }
 
     create() {
@@ -104,7 +105,7 @@ class GameScene3 extends Phaser.Scene {
 
         this.bossHealth = 100;
         this.maxBossHealth = 100;
-
+        this.gameOverSound = this.sound.add('gameOver');
         this.tweens.add({
             targets: this.boss,
             y: 170,
@@ -144,7 +145,7 @@ class GameScene3 extends Phaser.Scene {
 
         this.bossPhase = 1;
         this.bossAttackEvent = null;
-
+        
         // =====================
         // 🎯 mira
         // =====================
@@ -519,44 +520,137 @@ shoot() {
     }
 }
 
-    gameOver() {
+gameOver() {
 
-        this.isGameOver = true;
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+
+    this.sound.stopAll(); // primero cortar todo
+
+    this.isLeftDown = false;
+    this.isRightDown = false;
+
+    this.time.removeAllEvents();
+
+    // 🔊 sonido (IMPORTANTE: después de stopAll pero recreado limpio)
+    this.gameOverSound.play();
+
+    // fondo
+    this.add.rectangle(400, 300, 800, 600, 0x000000, 0.75)
+        .setDepth(1000);
+
+    this.add.text(400, 200, "GAME OVER", {
+        fontSize: '48px',
+        fill: '#ff0000'
+    }).setOrigin(0.5).setDepth(1001);
+
+    const retry = this.add.text(400, 310, "RETRY", {
+        fontSize: '30px',
+        fill: '#ffffff',
+        backgroundColor: '#000000aa',
+        padding: { x: 20, y: 10 }
+    })
+    .setOrigin(0.5)
+    .setDepth(1001)
+    .setInteractive({ useHandCursor: true });
+
+    retry.on('pointerdown', () => this.scene.restart());
+
+    const menu = this.add.text(400, 380, "MENU", {
+        fontSize: '30px',
+        fill: '#ffffff',
+        backgroundColor: '#000000aa',
+        padding: { x: 20, y: 10 }
+    })
+    .setOrigin(0.5)
+    .setDepth(1001)
+    .setInteractive({ useHandCursor: true });
+
+    menu.on('pointerdown', () => {
+        this.scene.stop();
+        this.scene.start('MenuScene');
+    });
+}
+
+killBoss() {
+
+    this.isGameOver = true;
+
+    this.music.stop();
+
+    this.tweens.killTweensOf(this.boss);
+
+    this.cameras.main.flash(300,255,255,255);
+    this.cameras.main.shake(400,0.02);
+
+    if (this.boss) this.boss.destroy();
+
+    // fondo oscuro
+    this.add.rectangle(400,300,800,600,0x000000,0.85)
+        .setDepth(2000);
+
+    // título
+    this.add.text(400, 160, "VICTORIA", {
+        fontSize: '54px',
+        fill: '#00ff00'
+    })
+    .setOrigin(0.5)
+    .setDepth(3000);
+
+    // mensaje
+    this.add.text(400, 240,
+        "La nave nodriza fue destruida.\nLa Tierra está a salvo... por ahora.",
+        {
+            fontSize: '22px',
+            fill: '#ffffff',
+            align: 'center'
+        }
+    )
+    .setOrigin(0.5)
+    .setDepth(3000);
+
+    // stats
+    this.add.text(400, 320,
+        `Score: ${this.score}\nVida restante: ${this.life}`,
+        {
+            fontSize: '24px',
+            fill: '#ffffff',
+            align: 'center'
+        }
+    )
+    .setOrigin(0.5)
+    .setDepth(3000);
+
+    // 🟡 BOTÓN MENU (más robusto)
+    const menuBtn = this.add.text(400, 410, "VOLVER AL MENU", {
+        fontSize: '28px',
+        fill: '#ffffff',
+        backgroundColor: '#000000aa',
+        padding: { x: 20, y: 10 }
+    })
+    .setOrigin(0.5)
+    .setDepth(3001)
+    .setInteractive({ useHandCursor: true });
+
+    menuBtn.on('pointerdown', () => {
+
         this.sound.stopAll();
 
-        this.add.rectangle(400,300,800,600,0x000000,0.7).setDepth(2000);
+        this.scene.stop();
+        this.scene.start('MenuScene');
+    });
 
-        this.add.text(260,250,"GAME OVER",{
-            fontSize:'48px',
-            fill:'#ff0000'
-        }).setDepth(3000);
-    }
-
-    killBoss() {
-
-        this.isGameOver = true;
-
-        this.music.stop();
-
-        this.tweens.killTweensOf(this.boss);
-
-        this.cameras.main.flash(300,255,255,255);
-        this.cameras.main.shake(400,0.02);
-
-        this.boss.destroy();
-
-        this.add.rectangle(400,300,800,600,0x000000,0.7).setDepth(2000);
-
-        this.add.text(260,240,"VICTORY!",{
-            fontSize:'52px',
-            fill:'#00ff00'
-        }).setDepth(3000);
-
-        this.add.text(290,320,`Score: ${this.score}`,{
-            fontSize:'30px',
-            fill:'#ffffff'
-        }).setDepth(3000);
-    }
+    // 🟣 crédito
+    this.add.text(400, 520,
+        "Desarrollado por Juano Studios",
+        {
+            fontSize: '18px',
+            fill: '#aaaaaa'
+        }
+    )
+    .setOrigin(0.5)
+    .setDepth(3000);
+}
 
     startBossAttack() {
 

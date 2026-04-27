@@ -614,11 +614,13 @@ endWave() {
 }
 
 winGame() {
-    localStorage.setItem('lvl3', 'true');
+
     this.isGameOver = true;
 
+    localStorage.setItem('lvl3', 'true');
+
     // 🖤 fondo
-    let fade = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7)
+    this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7)
         .setDepth(100);
 
     // 🟢 textos
@@ -637,8 +639,8 @@ winGame() {
         fill: '#ffffff'
     }).setDepth(200);
 
-    // ⬅ botón
-    let menu = this.add.text(400, 420, "VOLVER AL MENU", {
+    // botón menu
+    const menu = this.add.text(400, 420, "VOLVER AL MENU", {
         fontSize: '30px',
         fill: '#ffffff',
         backgroundColor: '#000000aa',
@@ -650,12 +652,12 @@ winGame() {
 
     menu.on('pointerdown', () => {
 
-    this.sound.stopAll();
-    this.tweens.killAll();
-    this.time.removeAllEvents();
+        this.sound.stopAll();
+        this.tweens.killAll();
+        this.time.removeAllEvents();
 
-    this.scene.stop();
-    this.scene.start('MenuScene');
+        this.scene.stop();
+        this.scene.start('MenuScene');
     });
 }
 
