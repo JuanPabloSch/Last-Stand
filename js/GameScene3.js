@@ -26,6 +26,8 @@ class GameScene3 extends Phaser.Scene {
         // ⚡ tormenta
         this.load.audio('thunder1', 'assets/sfx/lvl3/thunder1.mp3');
         this.load.audio('thunder2', 'assets/sfx/lvl3/thunder2.mp3');
+
+        this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
     }
 
     create() {
@@ -37,6 +39,7 @@ class GameScene3 extends Phaser.Scene {
 
         // estado base
         this.isGameOver = false;
+        
 
         // fondo
         this.add.image(400, 300, 'lvl4_bg').setDisplaySize(800, 600);
@@ -85,7 +88,7 @@ class GameScene3 extends Phaser.Scene {
             this.sound.add('thunder1', { volume: 0.35 }),
             this.sound.add('thunder2', { volume: 0.35 })
         ];
-
+        this.emptyVoice = this.sound.add('emptyVoice');
         this.startStorm();
 
         // =====================
@@ -145,8 +148,8 @@ class GameScene3 extends Phaser.Scene {
             .setDepth(1000);
 
         // stats jugador
-        this.maxAmmo = 10;
-        this.ammo = 10;
+        this.maxAmmo = 20;
+        this.ammo = 20;
         this.isReloading = false;
 
         this.maxLife = 5;
@@ -262,8 +265,18 @@ class GameScene3 extends Phaser.Scene {
     }
     shoot() {
 
-    if (this.isReloading) return;
-    if (this.ammo <= 0) return;
+    if (this.isReloading || this.isGameOver) return;
+
+    if (this.ammo <= 0) {
+        if (!this.emptyVoice.isPlaying) {
+            this.emptyVoice.play();
+        }
+        return;
+    }
+
+    this.ammo--;
+    this.updateAmmoUI();
+    
     if (this.isGameOver) return;
 
     this.ammo--;
@@ -288,51 +301,111 @@ class GameScene3 extends Phaser.Scene {
     });
 
     // ==========================
-    // 🎯 HIT AL BOSS
+// 🎯 HIT AL BOSS (NUEVO SISTEMA)
+// ==========================
+if (this.boss && this.boss.active) {
+
+    const b = this.boss.getBounds();
+    let hit = false;
+
     // ==========================
-    if (this.boss && this.boss.active) {
+    // FASE 1
+    // ==========================
+    if (this.bossHealth > 60) {
 
-        const bounds = this.boss.getBounds();
+        const leftEngine = new Phaser.Geom.Rectangle(
+            b.x + 20,
+            b.y + 90,
+            100,
+            120
+        );
 
-        if (Phaser.Geom.Rectangle.Contains(bounds, x, y)) {
+        const rightEngine = new Phaser.Geom.Rectangle(
+            b.right - 120,
+            b.y + 90,
+            100,
+            120
+        );
+
+        if (
+            Phaser.Geom.Rectangle.Contains(leftEngine, x, y) ||
+            Phaser.Geom.Rectangle.Contains(rightEngine, x, y)
+        ) hit = true;
+    }
+
+    // ==========================
+    // FASE 2
+    // ==========================
+    else if (this.bossHealth > 30) {
+
+        const cockpit = new Phaser.Geom.Rectangle(
+            b.centerX - 80,
+            b.y + 60,
+            160,
+            110
+        );
+
+        if (Phaser.Geom.Rectangle.Contains(cockpit, x, y))
+            hit = true;
+    }
+
+    // ==========================
+    // FASE 3
+    // ==========================
+    else {
+
+        const core = new Phaser.Geom.Rectangle(
+            b.centerX - 60,
+            b.bottom - 140,
+            120,
+            100
+        );
+
+        if (Phaser.Geom.Rectangle.Contains(core, x, y))
+            hit = true;
+    }
+
+    // ==========================
+    // DAMAGE
+    // ==========================
+    if (hit) {
 
         this.bossHealth--;
 
         this.bossBar.width =
-        (this.bossHealth / this.maxBossHealth) * 320;
+            (this.bossHealth / this.maxBossHealth) * 320;
 
-        // 🔥 cambio de fase
+        // cambio de fase
         if (this.bossHealth <= 60 &&
             this.boss.texture.key !== 'bossShip2' &&
             this.bossHealth > 30) {
 
             this.boss.setTexture('bossShip2');
-            this.cameras.main.shake(250,0.01);
+            this.cameras.main.shake(250, 0.01);
         }
 
         if (this.bossHealth <= 30 &&
             this.boss.texture.key !== 'bossShip3') {
 
             this.boss.setTexture('bossShip3');
-            this.cameras.main.shake(250,0.01);
+            this.cameras.main.shake(250, 0.01);
         }
 
-            // feedback visual
-            this.boss.setTint(0xff4444);
+        this.boss.setTint(0xff4444);
 
-            this.time.delayedCall(80, () => {
-                if (this.boss.active)
-                    this.boss.clearTint();
-            });
+        this.time.delayedCall(80, () => {
+            if (this.boss.active) this.boss.clearTint();
+        });
 
-            this.score += 10;
-            this.updateScoreUI();
+        this.score += 10;
+        this.updateScoreUI();
 
-            // muerte boss
-            if (this.bossHealth <= 0) {
-                this.killBoss();
-            }
+        if (this.bossHealth <= 0) {
+            this.killBoss();
         }
+    }
+    } else {
+        this.cameras.main.shake(15, 0.001);
     }
 }
 
