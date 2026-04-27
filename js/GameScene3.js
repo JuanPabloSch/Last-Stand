@@ -28,6 +28,7 @@ class GameScene3 extends Phaser.Scene {
         this.load.audio('thunder2', 'assets/sfx/lvl3/thunder2.mp3');
 
         this.load.audio('emptyVoice', 'assets/sfx/reloadvoice.mp3');
+        this.load.audio('hit', 'assets/sfx/grunt.mp3');
     }
 
     create() {
@@ -80,6 +81,7 @@ class GameScene3 extends Phaser.Scene {
         });
 
         this.music.play();
+        this.hitSound = this.sound.add('hit');
 
         // =====================
         // ⚡ sonidos tormenta
@@ -108,6 +110,10 @@ class GameScene3 extends Phaser.Scene {
             y: 170,
             duration: 3000,
             ease: 'Sine.easeOut'
+        });
+
+        this.time.delayedCall(3000, () => {
+            this.startBossAttack();
         });
 
         this.bossBarBg = this.add.rectangle(
@@ -263,25 +269,28 @@ class GameScene3 extends Phaser.Scene {
 
         lightning();
     }
-    shoot() {
+
+shoot() {
 
     if (this.isReloading || this.isGameOver) return;
 
+    const prevAmmo = this.ammo;
+
+    // 🔥 sin balas
     if (this.ammo <= 0) {
+
         if (!this.emptyVoice.isPlaying) {
             this.emptyVoice.play();
         }
+
         return;
     }
 
-    this.ammo--;
-    this.updateAmmoUI();
-    
-    if (this.isGameOver) return;
-
+    // 🔫 consumir bala
     this.ammo--;
     this.updateAmmoUI();
 
+    // 🔊 sonido disparo
     this.sound.play('shoot');
 
     this.cameras.main.shake(60, 0.002);
@@ -289,7 +298,7 @@ class GameScene3 extends Phaser.Scene {
     const x = this.input.x;
     const y = this.input.y;
 
-    // efecto disparo
+    // 💥 impacto visual
     const impact = this.add.circle(x, y, 3, 0xffff00).setDepth(2000);
 
     this.tweens.add({
@@ -300,112 +309,117 @@ class GameScene3 extends Phaser.Scene {
         onComplete: () => impact.destroy()
     });
 
-    // ==========================
-// 🎯 HIT AL BOSS (NUEVO SISTEMA)
-// ==========================
-if (this.boss && this.boss.active) {
-
-    const b = this.boss.getBounds();
-    let hit = false;
-
-    // ==========================
-    // FASE 1
-    // ==========================
-    if (this.bossHealth > 60) {
-
-        const leftEngine = new Phaser.Geom.Rectangle(
-            b.x + 20,
-            b.y + 90,
-            100,
-            120
-        );
-
-        const rightEngine = new Phaser.Geom.Rectangle(
-            b.right - 120,
-            b.y + 90,
-            100,
-            120
-        );
-
-        if (
-            Phaser.Geom.Rectangle.Contains(leftEngine, x, y) ||
-            Phaser.Geom.Rectangle.Contains(rightEngine, x, y)
-        ) hit = true;
+    // 🔥 sonido cuando se vacía (UNA sola vez)
+    if (this.ammo === 0 && prevAmmo > 0) {
+        this.emptyVoice.play();
     }
 
     // ==========================
-    // FASE 2
+    // 🎯 HIT AL BOSS
     // ==========================
-    else if (this.bossHealth > 30) {
+    if (this.boss && this.boss.active) {
 
-        const cockpit = new Phaser.Geom.Rectangle(
-            b.centerX - 80,
-            b.y + 60,
-            160,
-            110
-        );
+        const b = this.boss.getBounds();
+        let hit = false;
 
-        if (Phaser.Geom.Rectangle.Contains(cockpit, x, y))
-            hit = true;
-    }
+        // ==========================
+        // FASE 1
+        // ==========================
+        if (this.bossHealth > 60) {
 
-    // ==========================
-    // FASE 3
-    // ==========================
-    else {
+            const leftEngine = new Phaser.Geom.Rectangle(
+                b.x + 20,
+                b.y + 90,
+                100,
+                120
+            );
 
-        const core = new Phaser.Geom.Rectangle(
-            b.centerX - 60,
-            b.bottom - 140,
-            120,
-            100
-        );
+            const rightEngine = new Phaser.Geom.Rectangle(
+                b.right - 120,
+                b.y + 90,
+                100,
+                120
+            );
 
-        if (Phaser.Geom.Rectangle.Contains(core, x, y))
-            hit = true;
-    }
-
-    // ==========================
-    // DAMAGE
-    // ==========================
-    if (hit) {
-
-        this.bossHealth--;
-
-        this.bossBar.width =
-            (this.bossHealth / this.maxBossHealth) * 320;
-
-        // cambio de fase
-        if (this.bossHealth <= 60 &&
-            this.boss.texture.key !== 'bossShip2' &&
-            this.bossHealth > 30) {
-
-            this.boss.setTexture('bossShip2');
-            this.cameras.main.shake(250, 0.01);
+            if (
+                Phaser.Geom.Rectangle.Contains(leftEngine, x, y) ||
+                Phaser.Geom.Rectangle.Contains(rightEngine, x, y)
+            ) hit = true;
         }
 
-        if (this.bossHealth <= 30 &&
-            this.boss.texture.key !== 'bossShip3') {
+        // ==========================
+        // FASE 2
+        // ==========================
+        else if (this.bossHealth > 30) {
 
-            this.boss.setTexture('bossShip3');
-            this.cameras.main.shake(250, 0.01);
+            const cockpit = new Phaser.Geom.Rectangle(
+                b.centerX - 80,
+                b.y + 60,
+                160,
+                110
+            );
+
+            if (Phaser.Geom.Rectangle.Contains(cockpit, x, y))
+                hit = true;
         }
 
-        this.boss.setTint(0xff4444);
+        // ==========================
+        // FASE 3
+        // ==========================
+        else {
 
-        this.time.delayedCall(80, () => {
-            if (this.boss.active) this.boss.clearTint();
-        });
+            const core = new Phaser.Geom.Rectangle(
+                b.centerX - 60,
+                b.bottom - 140,
+                120,
+                100
+            );
 
-        this.score += 10;
-        this.updateScoreUI();
-
-        if (this.bossHealth <= 0) {
-            this.killBoss();
+            if (Phaser.Geom.Rectangle.Contains(core, x, y))
+                hit = true;
         }
-    }
-    } else {
-        this.cameras.main.shake(15, 0.001);
+
+        // ==========================
+        // DAMAGE
+        // ==========================
+        if (hit) {
+
+            this.bossHealth--;
+
+            this.bossBar.width =
+                (this.bossHealth / this.maxBossHealth) * 320;
+
+            if (this.bossHealth <= 60 &&
+                this.boss.texture.key !== 'bossShip2' &&
+                this.bossHealth > 30) {
+
+                this.boss.setTexture('bossShip2');
+                this.cameras.main.shake(250, 0.01);
+            }
+
+            if (this.bossHealth <= 30 &&
+                this.boss.texture.key !== 'bossShip3') {
+
+                this.boss.setTexture('bossShip3');
+                this.cameras.main.shake(250, 0.01);
+            }
+
+            this.boss.setTint(0xff4444);
+
+            this.time.delayedCall(80, () => {
+                if (this.boss.active) this.boss.clearTint();
+            });
+
+            this.score += 10;
+            this.updateScoreUI();
+
+            if (this.bossHealth <= 0) {
+                this.killBoss();
+            }
+
+        } else {
+            this.cameras.main.shake(15, 0.001);
+        }
     }
 }
 
@@ -428,16 +442,19 @@ if (this.boss && this.boss.active) {
 
     damagePlayer() {
 
-        this.life--;
-        this.updateLifeUI();
+    this.life--;
+    this.updateLifeUI();
 
-        this.cameras.main.flash(100,255,0,0);
-        this.cameras.main.shake(150,0.01);
+    // 🔊 sonido de impacto
+    this.hitSound.play();
 
-        if (this.life <= 0) {
-            this.gameOver();
-        }
+    this.cameras.main.flash(100, 255, 0, 0);
+    this.cameras.main.shake(150, 0.01);
+
+    if (this.life <= 0) {
+        this.gameOver();
     }
+}
 
     gameOver() {
 
@@ -477,6 +494,85 @@ if (this.boss && this.boss.active) {
             fill:'#ffffff'
         }).setDepth(3000);
     }
+
+    startBossAttack() {
+
+    this.bossAttackEvent = this.time.addEvent({
+        delay: 1200, // después lo cambiamos por fase
+        loop: true,
+        callback: () => {
+
+            if (this.isGameOver) return;
+
+            this.bossShoot();
+        }
+    });
+}
+
+bossShoot() {
+
+    if (!this.boss || !this.boss.active) return;
+
+    const x = Phaser.Math.Between(150, 650);
+
+    // 🔴 ZONA DE PELIGRO (mejor lectura visual)
+    const warn = this.add.circle(x, 0, 70, 0xff0000, 0.15)
+        .setDepth(999)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
+    const warnCore = this.add.circle(x, 0, 25, 0xff0000, 0.4)
+        .setDepth(999)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
+    // ⚡ pulso más agresivo
+    this.tweens.add({
+        targets: [warn, warnCore],
+        alpha: 0.9,
+        scale: 1.15,
+        duration: 180,
+        yoyo: true,
+        repeat: 2
+    });
+
+    // ⏱ tiempo de reacción (se siente más “ataque real”)
+    this.time.delayedCall(550, () => {
+
+        warn.destroy();
+        warnCore.destroy();
+
+        const bullet = this.add.circle(x, 0, 10, 0xff0000)
+            .setDepth(1000)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setStrokeStyle(2, 0xffffff);
+
+        const glow = this.add.circle(x, 0, 28, 0xff0000, 0.35)
+            .setDepth(999)
+            .setBlendMode(Phaser.BlendModes.ADD);
+
+        // 🚀 caída más “pesada”
+        this.tweens.add({
+            targets: [bullet, glow],
+            y: 600,
+            duration: 1000,
+            ease: 'Quad.easeIn',
+            onComplete: () => {
+                bullet.destroy();
+                glow.destroy();
+            }
+        });
+
+        // 💥 hit más justo (no tan random)
+        this.time.delayedCall(80, () => {
+
+            const dist = Math.abs(this.crosshair.x - x);
+
+            if (dist < 45) {
+                this.damagePlayer();
+            }
+        });
+
+    });
+}
 
     updateAmmoUI() {
         this.ammoText.setText(`Ammo: ${this.ammo}/${this.maxAmmo}`);
