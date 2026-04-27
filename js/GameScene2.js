@@ -22,6 +22,8 @@ class GameScene2 extends Phaser.Scene {
         this.load.audio('death3', 'assets/sfx/lvl3/death3.mp3');
         this.load.audio('getReadySound', 'assets/sfx/getready.mp3');
         this.load.audio('gameMusic', 'assets/music/lvl3.mp3');
+        this.load.audio('thunder1', 'assets/sfx/lvl3/thunder1.mp3');
+        this.load.audio('thunder2', 'assets/sfx/lvl3/thunder2.mp3');
     }
 
     create() {
@@ -56,35 +58,44 @@ class GameScene2 extends Phaser.Scene {
         this.enemyTypes = ['enemy1', 'enemy2', 'enemy3'];
         this.flyingEnemy = 'enemy3';
         this.lowHpActive = false;
+        if (this.sound.get('gameMusic')) {
+        this.sound.stopByKey('gameMusic');
+        }
+
         this.gameMusic = this.sound.add('gameMusic', {
             loop: true,
-            volume: 0.5
+            volume: 0.45
         });
 
         this.gameMusic.play();
-        
-        const g = this.add.graphics();
-        g.fillStyle(0xffffff);
-        g.fillCircle(0, 0, 2);
-        g.generateTexture('dust', 4, 4);
-        g.destroy();
-        this.dust = this.add.particles(0, 0, 'dust', {
+        this.thunders = [
+            this.sound.add('thunder1', { volume: 0.7 }),
+            this.sound.add('thunder2', { volume: 0.7 })
+        ];
+        this.startStorm();
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff);
+    g.fillRect(0, 0, 3, 18);
+    g.generateTexture('rain', 3, 18);
+    g.destroy();
+
+    this.rain = this.add.particles(0, 0, 'rain', {
         x: { min: 0, max: 800 },
-        y: { min: 0, max: 600 },
+        y: { min: -50, max: 0 },
 
-        lifespan: 7000,
+        lifespan: 900,
 
-        speedX: { min: -8, max: 8 },
-        speedY: { min: 5, max: 25 },
+        speedY: { min: 900, max: 1200 },
+        speedX: { min: -120, max: -60 },
 
-        scale: { start: 1.8, end: 0 },
-        alpha: { start: 0.25, end: 0 },
+        quantity: 6,
+        frequency: 15,
 
-        quantity: 1,
-        frequency: 50,
-
-        tint: 0xaaaaaa
+        scale: { start: 1, end: 1 },
+        alpha: { start: 0.8, end: 0.3 }
     });
+
+    this.rain.setDepth(999);
         // ocultar cursor del sistema
         this.input.setDefaultCursor('none');
         this.game.canvas.style.cursor = 'none';
@@ -653,6 +664,53 @@ winGame() {
             this.updateAmmoUI();
         });
     }
+
+    startStorm() {
+
+    const launchLightning = () => {
+
+        if (this.isGameOver) return;
+
+        // ⚡ flash
+        this.cameras.main.flash(
+            120,
+            255,
+            255,
+            255,
+            false
+        );
+        this.cameras.main.shake(120, 0.003);
+
+        // segundo flash opcional
+        this.time.delayedCall(100, () => {
+            this.cameras.main.flash(
+                80,
+                255,
+                255,
+                255,
+                false
+            );
+        });
+
+        // 🌩 trueno retrasado
+        this.time.delayedCall(
+            Phaser.Math.Between(250, 700),
+            () => {
+
+                const sound = Phaser.Math.RND.pick(this.thunders);
+                sound.play();
+            }
+        );
+
+        // repetir aleatorio
+        this.time.delayedCall(
+            Phaser.Math.Between(4000, 9000),
+            launchLightning
+        );
+    };
+
+    launchLightning();
+}
 
     updateAmmoUI() {
     this.ammoText.setText(`Ammo: ${this.ammo}/${this.maxAmmo}`);
