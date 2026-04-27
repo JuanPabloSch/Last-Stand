@@ -140,8 +140,10 @@ class GameScene3 extends Phaser.Scene {
                 repeat: -1,
                 ease: 'Sine.easeInOut'
             });
-
         });
+
+        this.bossPhase = 1;
+        this.bossAttackEvent = null;
 
         // =====================
         // 🎯 mira
@@ -379,47 +381,59 @@ shoot() {
                 hit = true;
         }
 
+            if (hit) {
+
+        this.bossHealth--;
+
+        this.bossBar.width =
+            (this.bossHealth / this.maxBossHealth) * 320;
+
         // ==========================
-        // DAMAGE
+        // 🎯 CAMBIO DE FASE (CORRECTO)
         // ==========================
-        if (hit) {
+        if (this.bossHealth <= 60 && this.bossPhase === 1) {
 
-            this.bossHealth--;
+            this.bossPhase = 2;
 
-            this.bossBar.width =
-                (this.bossHealth / this.maxBossHealth) * 320;
-
-            if (this.bossHealth <= 60 &&
-                this.boss.texture.key !== 'bossShip2' &&
-                this.bossHealth > 30) {
-
-                this.boss.setTexture('bossShip2');
-                this.cameras.main.shake(250, 0.01);
-            }
-
-            if (this.bossHealth <= 30 &&
-                this.boss.texture.key !== 'bossShip3') {
-
-                this.boss.setTexture('bossShip3');
-                this.cameras.main.shake(250, 0.01);
-            }
-
-            this.boss.setTint(0xff4444);
-
-            this.time.delayedCall(80, () => {
-                if (this.boss.active) this.boss.clearTint();
-            });
-
-            this.score += 10;
-            this.updateScoreUI();
-
-            if (this.bossHealth <= 0) {
-                this.killBoss();
-            }
-
-        } else {
-            this.cameras.main.shake(15, 0.001);
+            this.boss.setTexture('bossShip2');
+            this.cameras.main.shake(300, 0.01);
         }
+
+        if (this.bossHealth <= 30 && this.bossPhase === 2) {
+
+            this.bossPhase = 3;
+
+            this.boss.setTexture('bossShip3');
+            this.cameras.main.shake(400, 0.02);
+        }
+
+        // ==========================
+        // 💥 feedback visual de daño
+        // ==========================
+        this.boss.setTint(0xff4444);
+
+        this.time.delayedCall(80, () => {
+            if (this.boss.active) {
+                this.boss.clearTint();
+            }
+        });
+
+        // ==========================
+        // ⭐ score
+        // ==========================
+        this.score += 10;
+        this.updateScoreUI();
+
+        // ==========================
+        // ☠️ muerte boss
+        // ==========================
+        if (this.bossHealth <= 0) {
+            this.killBoss();
+        }
+
+    } else {
+        this.cameras.main.shake(15, 0.001);
+}
     }
 }
 
@@ -439,6 +453,55 @@ shoot() {
             this.updateAmmoUI();
         });
     }
+
+    spawnWarningShot(x) {
+
+    const warn = this.add.circle(x, 0, 70, 0xff0000, 0.15)
+        .setDepth(999)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
+    const core = this.add.circle(x, 0, 25, 0xff0000, 0.4)
+        .setDepth(999)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
+    this.tweens.add({
+        targets: [warn, core],
+        alpha: 0.9,
+        scale: 1.15,
+        duration: 180,
+        yoyo: true,
+        repeat: 2
+    });
+
+    this.time.delayedCall(550, () => {
+
+        warn.destroy();
+        core.destroy();
+
+        const bullet = this.add.circle(x, 0, 10, 0xff0000)
+            .setBlendMode(Phaser.BlendModes.ADD);
+
+        const glow = this.add.circle(x, 0, 28, 0xff0000, 0.35)
+            .setBlendMode(Phaser.BlendModes.ADD);
+
+        this.tweens.add({
+            targets: [bullet, glow],
+            y: 600,
+            duration: 1000,
+            onComplete: () => {
+                bullet.destroy();
+                glow.destroy();
+            }
+        });
+
+        this.time.delayedCall(80, () => {
+            if (Math.abs(this.crosshair.x - x) < 45) {
+                this.damagePlayer();
+            }
+        });
+
+    });
+}
 
     damagePlayer() {
 
@@ -497,82 +560,81 @@ shoot() {
 
     startBossAttack() {
 
-    this.bossAttackEvent = this.time.addEvent({
-        delay: 1200, // después lo cambiamos por fase
-        loop: true,
-        callback: () => {
+    this.scheduleNextAttack();
+    }
 
-            if (this.isGameOver) return;
+    scheduleNextAttack() {
 
-            this.bossShoot();
-        }
-    });
-}
+        if (this.isGameOver) return;
 
-bossShoot() {
+        let delay = 1200;
+
+        if (this.bossPhase === 2) delay = 800;
+        if (this.bossPhase === 3) delay = 500;
+
+        this.time.delayedCall(delay, () => {
+
+            this.bossShootPattern();
+
+            this.scheduleNextAttack();
+
+        });
+    }
+
+bossShootPattern() {
 
     if (!this.boss || !this.boss.active) return;
 
-    const x = Phaser.Math.Between(150, 650);
+    // ==========================
+    // FASE 1 → simple
+    // ==========================
+    if (this.bossPhase === 1) {
+        this.singleShot();
+    }
 
-    // 🔴 ZONA DE PELIGRO (mejor lectura visual)
-    const warn = this.add.circle(x, 0, 70, 0xff0000, 0.15)
-        .setDepth(999)
-        .setBlendMode(Phaser.BlendModes.ADD);
+    // ==========================
+    // FASE 2 → doble tiro
+    // ==========================
+    else if (this.bossPhase === 2) {
+        this.doubleShot();
+    }
 
-    const warnCore = this.add.circle(x, 0, 25, 0xff0000, 0.4)
-        .setDepth(999)
-        .setBlendMode(Phaser.BlendModes.ADD);
-
-    // ⚡ pulso más agresivo
-    this.tweens.add({
-        targets: [warn, warnCore],
-        alpha: 0.9,
-        scale: 1.15,
-        duration: 180,
-        yoyo: true,
-        repeat: 2
-    });
-
-    // ⏱ tiempo de reacción (se siente más “ataque real”)
-    this.time.delayedCall(550, () => {
-
-        warn.destroy();
-        warnCore.destroy();
-
-        const bullet = this.add.circle(x, 0, 10, 0xff0000)
-            .setDepth(1000)
-            .setBlendMode(Phaser.BlendModes.ADD)
-            .setStrokeStyle(2, 0xffffff);
-
-        const glow = this.add.circle(x, 0, 28, 0xff0000, 0.35)
-            .setDepth(999)
-            .setBlendMode(Phaser.BlendModes.ADD);
-
-        // 🚀 caída más “pesada”
-        this.tweens.add({
-            targets: [bullet, glow],
-            y: 600,
-            duration: 1000,
-            ease: 'Quad.easeIn',
-            onComplete: () => {
-                bullet.destroy();
-                glow.destroy();
-            }
-        });
-
-        // 💥 hit más justo (no tan random)
-        this.time.delayedCall(80, () => {
-
-            const dist = Math.abs(this.crosshair.x - x);
-
-            if (dist < 45) {
-                this.damagePlayer();
-            }
-        });
-
-    });
+    // ==========================
+    // FASE 3 → spam
+    // ==========================
+    else {
+        this.spamShot();
+    }
 }
+
+    singleShot() {
+        const x = Phaser.Math.Between(150, 650);
+        this.spawnWarningShot(x);
+    }
+
+    doubleShot() {
+        const x1 = Phaser.Math.Between(120, 350);
+        const x2 = Phaser.Math.Between(450, 680);
+
+        this.spawnWarningShot(x1);
+        this.time.delayedCall(150, () => this.spawnWarningShot(x2));
+    }
+
+    spamShot() {
+
+    // 🔥 menos caos, más legible
+    const shots = Phaser.Math.Between(2, 3);
+
+    for (let i = 0; i < shots; i++) {
+
+        const x = Phaser.Math.Between(120, 680);
+
+        this.time.delayedCall(i * 180, () => {
+            this.spawnWarningShot(x);
+        });
+    }
+}
+
 
     updateAmmoUI() {
         this.ammoText.setText(`Ammo: ${this.ammo}/${this.maxAmmo}`);
