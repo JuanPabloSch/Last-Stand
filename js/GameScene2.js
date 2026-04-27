@@ -388,54 +388,53 @@ this.targets.children.iterate((target) => {
     }
 }
 
-    spawnTarget() {
+        spawnTarget() {
 
         const type = Phaser.Math.RND.pick(this.enemyTypes);
 
         let x, y;
 
         // =========================
-        // 🚁 VOLADOR (ARRIBA)
+        // 🚁 VOLADOR
         // =========================
         if (type === this.flyingEnemy) {
 
-            x = Phaser.Math.Between(100, 700);
-            y = Phaser.Math.Between(80, 200);
+            x = Phaser.Math.Between(150, 650);
+
+            // arriba o abajo del puente
+            y = Phaser.Math.RND.pick([
+                Phaser.Math.Between(70, 170),
+                Phaser.Math.Between(430, 530)
+            ]);
 
         } else {
 
             // =========================
-            // 👟 SUELO (TÚNEL DINÁMICO)
+            // 👟 SUELO (camina puente)
             // =========================
+            y = Phaser.Math.Between(260, 340);
 
-            // profundidad
-            y = Phaser.Math.Between(300, 500);
-
-            // ancho según profundidad
-            const range = this.getTunnelXRange(y);
-
-            // posición dentro del túnel
-            x = Phaser.Math.Between(range.minX, range.maxX);
+            // sale desde izquierda o derecha
+            if (Phaser.Math.Between(0, 1) === 0) {
+                x = -60;
+            } else {
+                x = 860;
+            }
         }
 
         const target = this.add.image(x, y, type);
+
         target.type = type;
-        // vida según tipo
-        if (type === this.flyingEnemy) {
-            target.health = 1; // aire
-        } else {
-            target.health = 2; // suelo
-        }
+        target.health = 1;
 
         // =========================
         // 📏 ESCALA
         // =========================
         if (type === this.flyingEnemy) {
-            target.setScale(0.2);
+            target.setScale(0.20);
         } else {
-            const scale = this.getScaleByY(y);
-            target.setScale(scale);
-            target.setDepth(y); // mejora visual
+            target.setScale(0.28);
+            target.setDepth(y);
         }
 
         target.setTint(0xff8800);
@@ -443,19 +442,23 @@ this.targets.children.iterate((target) => {
 
         this.targets.add(target);
 
-        // dirección
-        target.setFlipX(x >= 400);
+        // mirar hacia donde va
+        if (type !== this.flyingEnemy) {
+            target.setFlipX(x < 0);
+        } else {
+            target.setFlipX(x >= 400);
+        }
 
         // =========================
-        // 🎞 MOVIMIENTO (solo volador)
+        // 🎞 MOVIMIENTO
         // =========================
         if (type === this.flyingEnemy) {
 
             this.tweens.add({
                 targets: target,
-                x: Phaser.Math.Between(100, 700),
-                y: Phaser.Math.Between(80, 200),
-                duration: 2000,
+                x: Phaser.Math.Between(150, 650),
+                y: y + Phaser.Math.Between(-40, 40),
+                duration: 1800,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
@@ -463,22 +466,39 @@ this.targets.children.iterate((target) => {
 
             this.tweens.add({
                 targets: target,
-                y: '+=10',
-                duration: 800,
+                y: '+=15',
+                duration: 700,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
             });
+
+        } else {
+
+            // caminar horizontal
+            const destinoX = x < 0 ? 860 : -60;
+
+            this.tweens.add({
+                targets: target,
+                x: destinoX,
+                duration: Phaser.Math.Between(3500, 5000),
+                ease: 'Linear'
+            });
         }
 
+        // =========================
         // 🟡 WARNING
+        // =========================
         this.time.delayedCall(1200, () => {
             if (!target.active) return;
+
             target.setTint(0xffcc00);
             target.state = 1;
         });
 
+        // =========================
         // 🔴 DANGER
+        // =========================
         this.time.delayedCall(2400, () => {
             if (!target.active) return;
 
@@ -577,7 +597,7 @@ endWave() {
 }
 
 winGame() {
-    localStorage.setItem('lvl1', 'true');
+    localStorage.setItem('lvl3', 'true');
     this.isGameOver = true;
 
     // 🖤 fondo

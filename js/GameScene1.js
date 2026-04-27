@@ -577,7 +577,7 @@ endWave() {
 }
 
 winGame() {
-    localStorage.setItem('lvl1', 'true');
+    localStorage.setItem('lvl2', 'true');
     this.isGameOver = true;
 
     // 🖤 fondo
