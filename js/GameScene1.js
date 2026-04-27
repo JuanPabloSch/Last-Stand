@@ -33,7 +33,7 @@ class GameScene1 extends Phaser.Scene {
         this.enemiesToSpawn = 0;
         this.spawning = false;
         this.getReadySound = this.sound.add('getReadySound');
-        this.maxAmmo = 6;
+        this.maxAmmo = 10;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
         this.shootSound = this.sound.add('shoot');
@@ -63,18 +63,6 @@ class GameScene1 extends Phaser.Scene {
 
         this.gameMusic.play();
         
-        // 🔦 luces del techo
-        this.light1 = this.add.circle(380, 82, 6, 0xffffaa, 0.6);
-        this.light2 = this.add.circle(650, 82, 6, 0xffffaa, 0.6);
-        this.time.addEvent({
-            delay: 200,
-            loop: true,
-            callback: () => {
-                this.light1.alpha = Phaser.Math.FloatBetween(0.4, 0.8);
-                this.light2.alpha = Phaser.Math.FloatBetween(0.3, 0.9);
-            }
-        });
-
         const g = this.add.graphics();
         g.fillStyle(0xffffff);
         g.fillCircle(0, 0, 2);

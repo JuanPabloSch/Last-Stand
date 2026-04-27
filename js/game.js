@@ -2,7 +2,7 @@ const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-     scene: [MenuScene, GameScene, GameScene1], // 👈 ACÁ
+    scene: [StartScene, MenuScene, GameScene, GameScene1,],
     backgroundColor: '#000'
 };
 
