@@ -6,11 +6,14 @@ class MenuScene extends Phaser.Scene {
     preload() {
 
         this.load.image('menu_bg', 'assets/background/menu.png');
-
+        // 🎵 música menú
+        this.load.audio('menuMusic', 'assets/music/menu.mp3');
         this.load.image('lvl1', 'assets/background/lvl1.png');
         this.load.image('lvl2', 'assets/background/lvl2.png');
         this.load.image('lvl3', 'assets/background/lvl3.png');
         this.load.image('lvl4', 'assets/background/lvl4.png');
+        // 🏷️ logo
+        this.load.image('studioLogo', 'assets/ui/juano_studios.png');
     }
 
     create() {
@@ -19,6 +22,30 @@ class MenuScene extends Phaser.Scene {
         console.log('lvl3:', JSON.stringify(localStorage.getItem('lvl3')));
         this.input.setDefaultCursor('default');
 
+        // 🎵 música menú
+        this.music = this.sound.add('menuMusic', {
+            loop: true,
+            volume: 0.5
+        });
+ // =========================
+        // 🏷️ LOGO abajo derecha
+        // =========================
+        // 👇 LOGO SIEMPRE AL FINAL
+        this.add.image(0, 0, 'studioLogo')
+            .setScale(0.3)
+            .setOrigin(1, 1)
+            .setPosition(800, 600) // esquina real del canvas
+            .setDepth(1000);
+
+        // título
+        this.add.text(260, 80, "SELECT LEVEL", {
+            fontSize: '40px',
+            fill: '#ffffff'
+        });
+
+
+
+        this.music.play();
         this.add.image(400, 300, 'menu_bg').setDisplaySize(800, 600);
 
         this.add.text(260, 80, "SELECT LEVEL", {
