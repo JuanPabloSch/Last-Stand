@@ -35,7 +35,7 @@ class GameScene2 extends Phaser.Scene {
         this.enemiesToSpawn = 0;
         this.spawning = false;
         this.getReadySound = this.sound.add('getReadySound');
-        this.maxAmmo = 6;
+        this.maxAmmo = 20;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
         this.shootSound = this.sound.add('shoot3');

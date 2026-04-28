@@ -33,7 +33,7 @@ class GameScene extends Phaser.Scene {
         this.enemiesToSpawn = 0;
         this.spawning = false;
         this.getReadySound = this.sound.add('getReadySound');
-        this.maxAmmo = 6;
+        this.maxAmmo = 20;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
         this.shootSound = this.sound.add('shoot1');
@@ -543,8 +543,9 @@ winGame() {
 
     this.isGameOver = true;
 
-    // 🧠 guardar progreso del nivel actual (IMPORTANTE)
+    console.log("WIN LEVEL EJECUTADO");
     localStorage.setItem('lvl1', 'true');
+    console.log("GUARDADO lvl1:", localStorage.getItem('lvl1'));
 
     // 🖤 fondo
     let fade = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.7)

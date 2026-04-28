@@ -14,7 +14,9 @@ class MenuScene extends Phaser.Scene {
     }
 
     create() {
-
+        console.log('lvl1:', JSON.stringify(localStorage.getItem('lvl1')));
+        console.log('lvl2:', JSON.stringify(localStorage.getItem('lvl2')));
+        console.log('lvl3:', JSON.stringify(localStorage.getItem('lvl3')));
         this.input.setDefaultCursor('default');
 
         this.add.image(400, 300, 'menu_bg').setDisplaySize(800, 600);

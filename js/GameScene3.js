@@ -157,8 +157,8 @@ class GameScene3 extends Phaser.Scene {
             .setDepth(1000);
 
         // stats jugador
-        this.maxAmmo = 20;
-        this.ammo = 20;
+        this.maxAmmo = 50;
+        this.ammo = 50;
         this.isReloading = false;
 
         this.maxLife = 5;
