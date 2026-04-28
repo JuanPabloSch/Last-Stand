@@ -35,7 +35,7 @@ class GameScene2 extends Phaser.Scene {
         this.enemiesToSpawn = 0;
         this.spawning = false;
         this.getReadySound = this.sound.add('getReadySound');
-        this.maxAmmo = 20;
+        this.maxAmmo = 8;
         this.ammo = this.maxAmmo;
         this.isReloading = false;
         this.shootSound = this.sound.add('shoot3');
@@ -133,6 +133,23 @@ class GameScene2 extends Phaser.Scene {
     this.updateScoreUI();
     this.updateLifeUI();
     this.updateAmmoUI();
+    if (this.sys.game.device.input.touch) {
+
+    this.reloadBtn = this.add.text(55, 555, "🔄", {
+        fontSize: '38px',
+        fill: '#ffffff',
+        backgroundColor: '#00000088',
+        padding: { x: 12, y: 6 }
+    })
+    .setOrigin(0.5)
+    .setDepth(9999)
+    .setScrollFactor(0)
+    .setInteractive();
+
+    this.reloadBtn.on('pointerdown', () => {
+        this.reload();
+    });
+}
 
     this.input.mouse.disableContextMenu();
 

@@ -157,8 +157,8 @@ class GameScene3 extends Phaser.Scene {
             .setDepth(1000);
 
         // stats jugador
-        this.maxAmmo = 50;
-        this.ammo = 50;
+        this.maxAmmo = 22;
+        this.ammo = 22;
         this.isReloading = false;
 
         this.maxLife = 5;
@@ -191,6 +191,23 @@ class GameScene3 extends Phaser.Scene {
         this.updateAmmoUI();
         this.updateLifeUI();
         this.updateScoreUI();
+        if (this.sys.game.device.input.touch) {
+
+    this.reloadBtn = this.add.text(55, 555, "🔄", {
+        fontSize: '38px',
+        fill: '#ffffff',
+        backgroundColor: '#00000088',
+        padding: { x: 12, y: 6 }
+    })
+    .setOrigin(0.5)
+    .setDepth(9999)
+    .setScrollFactor(0)
+    .setInteractive();
+
+    this.reloadBtn.on('pointerdown', () => {
+        this.reload();
+    });
+}
 
         //MOUSE
         this.input.mouse.disableContextMenu();
